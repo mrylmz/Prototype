@@ -146,7 +146,7 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            throw PrototypeMacroError.unsupportedTypeError(type: spec.type, member: spec.name)
+            result.append("\(spec.type)Form(model: \(binding))")
         }
         
         return result.joined(separator: "\n")
@@ -174,7 +174,7 @@ extension PrototypeMacro {
             }
             
         default:
-            throw PrototypeMacroError.unsupportedTypeError(type: spec.type, member: spec.name)
+            result.append("\(spec.type)View(model: \(value))")
         }
         
         return result.joined(separator: "\n")

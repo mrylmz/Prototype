@@ -193,35 +193,4 @@ final class PrototypeTests: XCTestCase {
         throw XCTSkip("macros are only supported when running tests for the host platform")
         #endif
     }
-    
-    func testPrototypeMacroErrorUnsupportedTypeError() throws {
-        #if canImport(PrototypeMacros)
-        assertMacroExpansion(
-            """
-            struct MyStruct {}
-            
-            @Prototype(.view, .form)
-            struct OtherStruct {
-                var myStruct: MyStruct
-            }
-            """,
-            expandedSource: """
-            struct MyStruct {}
-            struct OtherStruct {
-                var myStruct: MyStruct
-            }
-            """,
-            diagnostics: [
-                DiagnosticSpec(
-                    message: PrototypeMacroError.unsupportedTypeError(type: "MyStruct", member: "myStruct").debugDescription,
-                    line: 3,
-                    column: 1
-                )
-            ],
-            macros: testMacros
-        )
-        #else
-        throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
-    }
 }

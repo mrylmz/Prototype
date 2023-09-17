@@ -9,7 +9,6 @@ public enum PrototypeMacroError: Error {
     case missingMemberPatternTypeAnnotation(member: String)
     case unsupportedMemberPatternBinding
     case unsupportedMemberPatternTypeAnnotation(type: String, member: String)
-    case unsupportedTypeError(type: String, member: String)
     case underlyingError(message: String)
 }
 
@@ -41,9 +40,6 @@ extension PrototypeMacroError: CustomDebugStringConvertible {
         case let .unsupportedMemberPatternTypeAnnotation(type, member):
             "Prototype macro doesn't support type `\(type)` for member `\(member)`"
 
-        case let .unsupportedTypeError(type, member):
-            "Prototype macro doesn't support type `\(type)` for member `\(member)`"
-            
         case let .underlyingError(message):
             message
         }
