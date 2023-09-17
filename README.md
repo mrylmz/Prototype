@@ -19,21 +19,54 @@ SwiftUI has transformed UI development in Swift, but rapid prototyping by creati
 Here's a quick example of Prototype in action:
 
 ```swift
-import Prototype
-import SwiftUI
+@Prototype(.form)
+struct Author {
+    let name: String
+}
+```
+Macro Expansion:
+```swift
+struct AuthorForm: View {
+    @Binding public var model: Author
+    private let footer: AnyView?
 
+    public init(model: Binding<Author>) {
+        self._model = model
+        self.footer = nil
+    }
+
+    public init<Footer>(model: Binding<Author>, @ViewBuilder footer: () -> Footer) where Footer: View {
+        self._model = model
+        self.footer = AnyView(erasing: footer())
+    }
+
+    public var body: some View {
+        Form {
+            TextField("AuthorForm.name", text: .constant(model.name))
+
+            if let footer {
+                footer
+            }
+        }
+    }
+}
+```
+
+```swift
 @Prototype(.form)
 struct Article {
     @Section
     var title: String
     var content: String
-    var author: String
     
     @Section("metadata")
     var isPublished: Bool
     let views: Int
+    let author: Author
 }
-// Macro expansion:
+```
+Macro Expansion:
+```swift
 struct ArticleForm: View {
     @Binding public var model: Article
     private let footer: AnyView?
@@ -53,11 +86,11 @@ struct ArticleForm: View {
             Section {
                 TextField("ArticleForm.title", text: $model.title)
                 TextField("ArticleForm.content", text: $model.content)
-                TextField("ArticleForm.author", text: $model.author)
             }
             Section(header: Text("ArticleForm.metadata")) {
                 Toggle("ArticleForm.isPublished", isOn: $model.isPublished)
                 Stepper("ArticleForm.views", value: .constant(model.views))
+                AuthorForm(model: .constant(model.author))
             }
 
             if let footer {
