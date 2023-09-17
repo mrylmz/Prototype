@@ -47,6 +47,7 @@ extension PrototypeMemberAttributes {
     public static let visible: Self = .init(rawValue: 1 << 0)
     public static let modifiable: Self = .init(rawValue: 1 << 1)
     public static let secure: Self = .init(rawValue: 1 << 2)
+    public static let section: Self = .init(rawValue: 1 << 3)
 }
 
 public struct PrototypeMemberSpec {
@@ -54,20 +55,20 @@ public struct PrototypeMemberSpec {
     public let name: String
     public let type: String
     public let attributes: PrototypeMemberAttributes
-    public let initializer: InitializerClauseSyntax?
+    public let sectionTitle: String?
     
     public init(
         accessLevelModifiers: AccessLevelModifiers,
         name: String,
         type: String,
         attributes: PrototypeMemberAttributes,
-        initializer: InitializerClauseSyntax?
+        sectionTitle: String?
     ) {
         self.accessLevelModifiers = accessLevelModifiers
         self.name = name
         self.type = type
         self.attributes = attributes
-        self.initializer = initializer
+        self.sectionTitle = sectionTitle
     }
     
     public init(parsing declaration: VariableDeclSyntax) throws {
@@ -102,12 +103,25 @@ public struct PrototypeMemberSpec {
             attributes.insert(.secure)
         }
         
+        var sectionTitle: String? = nil
+        if let attribute = declaration.attribute(named: "Section") {
+            attributes.insert(.section)
+            
+            sectionTitle = attribute
+                .arguments?.as(LabeledExprListSyntax.self)?
+                .first?.as(LabeledExprSyntax.self)?
+                .expression.as(StringLiteralExprSyntax.self)?
+                .segments.first?.as(StringSegmentSyntax.self)?
+                .content
+                .text
+        }
+        
         self.init(
             accessLevelModifiers: declaration.accessLevelModifiers,
             name: name,
             type: type,
             attributes: attributes,
-            initializer: binding.initializer
+            sectionTitle: sectionTitle
         )
     }
 }

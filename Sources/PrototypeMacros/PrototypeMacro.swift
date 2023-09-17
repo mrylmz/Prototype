@@ -19,29 +19,59 @@ public struct PrototypeMacro: PeerMacro {
         var result: [DeclSyntax] = []
 
         if hasForm {
-            let membersBody = try spec.members
-                .filter { member in member.attributes.contains(.visible) }
-                .map { member in try buildMemberSpecFormSyntax(keyPrefix: "\(spec.name)Form", spec: member) }
-                .joined(separator: "\n")
+            let members = spec.members.filter { member in member.attributes.contains(.visible) }
+            var isInSection = false
+            var body: [String] = []
             
-            #warning("Expansion is emitting wrong indentation of 8 whitespace instead of 4")
-            
-            result.append(
-                """
-                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
-                    @Binding public var model: \(raw: spec.name)
-                
-                    public init(model: Binding<\(raw: spec.name)>) {
-                        self._model = model
+            try members.forEach { member in
+                if member.attributes.contains(.section) {
+                    if isInSection {
+                        body.append("}")
                     }
-
-                    public var body: some View {
-                        Form {
-                            \(raw: membersBody)
-                        }
+                    
+                    isInSection = true
+                    
+                    if let sectionTitle = member.sectionTitle {
+                        body.append("Section(header: Text(\"\(spec.name)Form.\(sectionTitle)\")) {")
+                    } else {
+                        body.append("Section {")
                     }
                 }
-                """
+                
+                body.append(try buildMemberSpecFormSyntax(keyPrefix: "\(spec.name)Form", spec: member))
+            }
+            
+            if isInSection {
+                body.append("}")
+            }
+            
+            result.append(
+            """
+            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
+            @Binding public var model: \(raw: spec.name)
+            private let footer: AnyView?
+            
+            public init(model: Binding<\(raw: spec.name)>) {
+                self._model = model
+                self.footer = nil
+            }
+            
+            public init<Footer>(model: Binding<\(raw: spec.name)>, @ViewBuilder footer: () -> Footer) where Footer: View {
+                self._model = model
+                self.footer = AnyView(erasing: footer())
+            }
+
+            public var body: some View {
+                Form {
+                    \(raw: body.joined(separator: "\n"))
+            
+                    if let footer {
+                        footer
+                    }
+                }
+            }
+            }
+            """
             )
         }
         
@@ -55,22 +85,20 @@ public struct PrototypeMacro: PeerMacro {
                 membersBody = "EmptyView()"
             }
             
-            #warning("Expansion is emitting wrong indentation of 8 whitespace instead of 4")
-            
             result.append(
-                """
-                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View: View {
-                    public let model: \(raw: spec.name)
-                
-                    public init(model: \(raw: spec.name)) {
-                        self.model = model
-                    }
+            """
+            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View: View {
+            public let model: \(raw: spec.name)
+            
+            public init(model: \(raw: spec.name)) {
+                self.model = model
+            }
 
-                    public var body: some View {
-                        \(raw: membersBody)
-                    }
-                }
-                """
+            public var body: some View {
+                \(raw: membersBody)
+            }
+            }
+            """
             )
         }
         

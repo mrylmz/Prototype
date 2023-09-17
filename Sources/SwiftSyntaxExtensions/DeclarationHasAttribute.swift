@@ -107,13 +107,10 @@ extension DeclSyntaxProtocol {
             attribute.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == name
         }
     }
+    
+    public func attribute(named name: String) -> AttributeSyntax? {
+        attributeList
+            .compactMap { attribute in attribute.as(AttributeSyntax.self) }
+            .first { attribute in attribute.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == name }
+    }
 }
-
-/*
- declaration → extension-declaration
- declaration → subscript-declaration
- declaration → macro-declaration
- declaration → operator-declaration
- declaration → precedence-group-declaration
- declarations → declaration declarations?
- */

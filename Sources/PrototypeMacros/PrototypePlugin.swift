@@ -7,6 +7,7 @@ import SwiftSyntaxMacros
 struct PrototypePlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         PrototypeMacro.self,
+        SectionMacro.self,
         SecureMacro.self,
     ]
 }

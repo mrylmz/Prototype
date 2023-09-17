@@ -13,6 +13,7 @@ public enum PrototypeMacroError: Error {
     case underlyingError(message: String)
 }
 
+#warning("Add error localizations strings")
 extension PrototypeMacroError: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {

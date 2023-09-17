@@ -5,5 +5,3 @@ public macro Prototype(
     _ firstKind: PrototypeKind,
     _ otherKinds: PrototypeKind...
 ) = #externalMacro(module: "PrototypeMacros", type: "PrototypeMacro")
-
-#warning("Add support for Section macro")
