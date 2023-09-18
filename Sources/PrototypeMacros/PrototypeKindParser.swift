@@ -1,10 +1,8 @@
 import Foundation
+import PrototypeAPI
 import SwiftSyntax
 
-public enum PrototypeKind: String, CaseIterable {
-    case view
-    case form
-    
+extension PrototypeKind {
     public init(from expression: LabeledExprSyntax) throws {
         /*
          LabeledExprSyntax

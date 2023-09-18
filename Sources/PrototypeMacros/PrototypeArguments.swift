@@ -1,5 +1,6 @@
 import Foundation
 import SwiftSyntax
+import PrototypeAPI
 
 public struct PrototypeArguments {
     public let style: PrototypeStyle
