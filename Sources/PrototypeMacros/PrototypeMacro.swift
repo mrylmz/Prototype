@@ -12,94 +12,94 @@ public struct PrototypeMacro: PeerMacro {
     ) throws -> [DeclSyntax] {
         guard isSupportedPeerDeclaration(declaration) else { throw PrototypeMacroError.unsupportedPeerDeclaration }
         
-        let prototypeKinds = try parsePrototypeKinds(from: node)
-        let hasForm = prototypeKinds.contains(prototypeKindIdentifierForm)
-        let hasView = prototypeKinds.contains(prototypeKindIdentifierView)
+        let arguments = try PrototypeArguments(from: node)
         let spec = try PrototypeSpec(parsing: declaration)
         var result: [DeclSyntax] = []
 
-        if hasForm {
-            let members = spec.members.filter { member in member.attributes.contains(.visible) }
-            var isInSection = false
-            var body: [String] = []
-            
-            try members.forEach { member in
-                if member.attributes.contains(.section) {
-                    if isInSection {
-                        body.append("}")
+        try arguments.kinds.forEach { kind in
+            switch kind {
+            case .form:
+                let members = spec.members.filter { member in member.attributes.contains(.visible) }
+                var isInSection = false
+                var body: [String] = []
+                
+                try members.forEach { member in
+                    if member.attributes.contains(.section) {
+                        if isInSection {
+                            body.append("}")
+                        }
+                        
+                        isInSection = true
+                        
+                        if let sectionTitle = member.sectionTitle {
+                            body.append("Section(header: Text(\"\(spec.name)Form.\(sectionTitle)\")) {")
+                        } else {
+                            body.append("Section {")
+                        }
                     }
                     
-                    isInSection = true
-                    
-                    if let sectionTitle = member.sectionTitle {
-                        body.append("Section(header: Text(\"\(spec.name)Form.\(sectionTitle)\")) {")
-                    } else {
-                        body.append("Section {")
-                    }
+                    body.append(try buildMemberSpecFormSyntax(arguments: arguments, keyPrefix: "\(spec.name)Form", spec: member))
                 }
                 
-                body.append(try buildMemberSpecFormSyntax(keyPrefix: "\(spec.name)Form", spec: member))
-            }
-            
-            if isInSection {
-                body.append("}")
-            }
-            
-            result.append(
-            """
-            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
-            @Binding public var model: \(raw: spec.name)
-            private let footer: AnyView?
-            
-            public init(model: Binding<\(raw: spec.name)>) {
-                self._model = model
-                self.footer = nil
-            }
-            
-            public init<Footer>(model: Binding<\(raw: spec.name)>, @ViewBuilder footer: () -> Footer) where Footer: View {
-                self._model = model
-                self.footer = AnyView(erasing: footer())
-            }
+                if isInSection {
+                    body.append("}")
+                }
+                
+                result.append(
+                """
+                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
+                @Binding public var model: \(raw: spec.name)
+                private let footer: AnyView?
+                
+                public init(model: Binding<\(raw: spec.name)>) {
+                    self._model = model
+                    self.footer = nil
+                }
+                
+                public init<Footer>(model: Binding<\(raw: spec.name)>, @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self._model = model
+                    self.footer = AnyView(erasing: footer())
+                }
 
-            public var body: some View {
-                Form {
-                    \(raw: body.joined(separator: "\n"))
-            
-                    if let footer {
-                        footer
+                public var body: some View {
+                    Form {
+                        \(raw: body.joined(separator: "\n"))
+                
+                        if let footer {
+                            footer
+                        }
                     }
                 }
-            }
-            }
-            """
-            )
-        }
-        
-        if hasView {
-            var membersBody = try spec.members
-                .filter { member in member.attributes.contains(.visible) }
-                .map { member in try buildMemberSpecViewSyntax(member) }
-                .joined(separator: "\n")
-            
-            if membersBody.isEmpty {
-                membersBody = "EmptyView()"
-            }
-            
-            result.append(
-            """
-            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View: View {
-            public let model: \(raw: spec.name)
-            
-            public init(model: \(raw: spec.name)) {
-                self.model = model
-            }
+                }
+                """
+                )
+                
+            case .view:
+                var membersBody = try spec.members
+                    .filter { member in member.attributes.contains(.visible) }
+                    .map { member in try buildMemberSpecViewSyntax(member) }
+                    .joined(separator: "\n")
+                
+                if membersBody.isEmpty {
+                    membersBody = "EmptyView()"
+                }
+                
+                result.append(
+                """
+                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View: View {
+                public let model: \(raw: spec.name)
+                
+                public init(model: \(raw: spec.name)) {
+                    self.model = model
+                }
 
-            public var body: some View {
-                \(raw: membersBody)
+                public var body: some View {
+                    \(raw: membersBody)
+                }
+                }
+                """
+                )
             }
-            }
-            """
-            )
         }
         
         return result
@@ -116,7 +116,11 @@ extension PrototypeMacro {
 }
 
 extension PrototypeMacro {
-    private static func buildMemberSpecFormSyntax(keyPrefix: String, spec: PrototypeMemberSpec) throws -> String {
+    private static func buildMemberSpecFormSyntax(
+        arguments: PrototypeArguments,
+        keyPrefix: String,
+        spec: PrototypeMemberSpec
+    ) throws -> String {
         guard spec.attributes.contains(.visible) else { return "" }
 
         var result: [String] = []
@@ -128,6 +132,10 @@ extension PrototypeMacro {
         let key = "\"\(keyPrefix).\(spec.name)\""
         let binding = spec.attributes.contains(.modifiable) ? "$model.\(spec.name)" : ".constant(model.\(spec.name))"
 
+        if arguments.style == .labeled {
+            result.append("LabeledContent(\(key)) {")
+        }
+        
         switch spec.type {
         case "Bool":
             result.append("Toggle(\(key), isOn: \(binding))")
@@ -147,6 +155,10 @@ extension PrototypeMacro {
 
         default:
             result.append("\(spec.type)Form(model: \(binding))")
+        }
+        
+        if arguments.style == .labeled {
+            result.append("}")
         }
         
         return result.joined(separator: "\n")
@@ -190,7 +202,7 @@ extension PrototypeMacro {
             let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
             !arguments.isEmpty
         else {
-            throw PrototypeMacroError.missingPrototypeKindArgument
+            throw PrototypeMacroError.missingPrototypeKindsArgument
         }
         
         let validPrototypeKinds = [prototypeKindIdentifierForm, prototypeKindIdentifierView]
@@ -204,7 +216,7 @@ extension PrototypeMacro {
                 .text
             
             guard let identifier, validPrototypeKinds.contains(identifier) else {
-                throw PrototypeMacroError.invalidPrototypeKindArgument
+                throw PrototypeMacroError.invalidPrototypeKindsArgument
             }
             
             return identifier

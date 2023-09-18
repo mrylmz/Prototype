@@ -1,7 +1,9 @@
 import Foundation
+import PrototypeMacros
 
 @attached(peer, names: suffixed(Form), suffixed(View))
 public macro Prototype(
-    _ firstKind: PrototypeKind,
+    style: PrototypeStyle = .default,
+    kinds firstKind: PrototypeKind,
     _ otherKinds: PrototypeKind...
 ) = #externalMacro(module: "PrototypeMacros", type: "PrototypeMacro")

@@ -1,16 +1,16 @@
 import Prototype
 import SwiftUI
 
-@Prototype(.form)
+@Prototype(style: .inline, kinds: .form, .view)
 struct Author {
     let name: String
 }
 
-@Prototype(.form)
+@Prototype(kinds: .form)
 struct Article {
-    @Section
     var title: String
     var content: String
+    @Secure var password: String
     
     @Section("metadata")
     var isPublished: Bool

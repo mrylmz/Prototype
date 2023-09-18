@@ -16,7 +16,7 @@ final class PrototypeTests: XCTestCase {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
-            @Prototype(.view)
+            @Prototype(kinds: .view)
             enum MyEnum {}
             """,
             expandedSource: """
@@ -40,7 +40,7 @@ final class PrototypeTests: XCTestCase {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
-            @Prototype(.view)
+            @Prototype(kinds: .view)
             var myValue: Int = 0
             """,
             expandedSource: """
@@ -64,7 +64,7 @@ final class PrototypeTests: XCTestCase {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
-            @Prototype(.unknown)
+            @Prototype(kinds: .unknown)
             struct MyStruct {}
             """,
             expandedSource: """
@@ -72,7 +72,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.invalidPrototypeKindArgument.debugDescription,
+                    message: PrototypeMacroError.invalidPrototypeKindsArgument.debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -96,7 +96,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.missingPrototypeKindArgument.debugDescription,
+                    message: PrototypeMacroError.missingPrototypeKindsArgument.debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -112,7 +112,7 @@ final class PrototypeTests: XCTestCase {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
-            @Prototype(.view, .form, .form)
+            @Prototype(kinds: .view, .form, .form)
             struct MyStruct {}
             """,
             expandedSource: """
@@ -138,7 +138,7 @@ final class PrototypeTests: XCTestCase {
             """
             import SwiftUI
 
-            @Prototype(.form)
+            @Prototype(kinds: .form)
             struct MyStruct {
                 @Environment(\\.accessibilityEnabled) var accessibilityEnabled
             }
@@ -169,7 +169,7 @@ final class PrototypeTests: XCTestCase {
             """
             import SwiftUI
 
-            @Prototype(.form)
+            @Prototype(kinds: .form)
             class MyClass {
                 var callable: () -> Void
             }

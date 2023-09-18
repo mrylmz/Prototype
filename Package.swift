@@ -5,7 +5,7 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "Prototype",
-    platforms: [.macOS(.v11), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+    platforms: [.macOS(.v13), .iOS(.v16), .tvOS(.v16), .watchOS(.v6), .macCatalyst(.v16)],
     products: [
         .library(name: "Prototype", targets: ["Prototype"]),
         .executable(name: "PrototypeClient", targets: ["PrototypeClient"]),

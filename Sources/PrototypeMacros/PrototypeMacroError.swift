@@ -2,8 +2,8 @@ import Foundation
 
 public enum PrototypeMacroError: Error {
     case unsupportedPeerDeclaration
-    case invalidPrototypeKindArgument
-    case missingPrototypeKindArgument
+    case invalidPrototypeKindsArgument
+    case missingPrototypeKindsArgument
     case duplicatePrototypeKindArgument
     case missingMemberPatternBinding
     case missingMemberPatternTypeAnnotation(member: String)
@@ -19,10 +19,10 @@ extension PrototypeMacroError: CustomDebugStringConvertible {
         case .unsupportedPeerDeclaration:
             "Prototype macro can only be attached to `struct` or `class` declarations."
 
-        case .invalidPrototypeKindArgument:
+        case .invalidPrototypeKindsArgument:
             "Invalid argument given for Prototype(...) macro"
 
-        case .missingPrototypeKindArgument:
+        case .missingPrototypeKindsArgument:
             "Prototype arguments not specified expected a list of prototype kinds to generate including `.view` and/or `.form`."
 
         case .duplicatePrototypeKindArgument:
