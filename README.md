@@ -18,8 +18,9 @@ SwiftUI has transformed UI development in Swift, but rapid prototyping by creati
 
 Here's a quick example of Prototype in action:
 
+Source:
 ```swift
-@Prototype(.form)
+@Prototype(style: .labeled, kinds: .form)
 struct Author {
     let name: String
 }
@@ -42,7 +43,9 @@ struct AuthorForm: View {
 
     public var body: some View {
         Form {
-            TextField("AuthorForm.name", text: .constant(model.name))
+            LabeledContent("AuthorForm.name") {
+                TextField("AuthorForm.name", text: .constant(model.name))
+            }
 
             if let footer {
                 footer
@@ -52,12 +55,13 @@ struct AuthorForm: View {
 }
 ```
 
+Source:
 ```swift
-@Prototype(.form)
+@Prototype(style: .inline, kinds: .form)
 struct Article {
-    @Section
     var title: String
     var content: String
+    @Secure var password: String
     
     @Section("metadata")
     var isPublished: Bool
@@ -83,10 +87,9 @@ struct ArticleForm: View {
 
     public var body: some View {
         Form {
-            Section {
-                TextField("ArticleForm.title", text: $model.title)
-                TextField("ArticleForm.content", text: $model.content)
-            }
+            TextField("ArticleForm.title", text: $model.title)
+            TextField("ArticleForm.content", text: $model.content)
+            SecureField("ArticleForm.password", text: $model.password)
             Section(header: Text("ArticleForm.metadata")) {
                 Toggle("ArticleForm.isPublished", isOn: $model.isPublished)
                 Stepper("ArticleForm.views", value: .constant(model.views))

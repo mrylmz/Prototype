@@ -1,12 +1,12 @@
 import Prototype
 import SwiftUI
 
-@Prototype(style: .inline, kinds: .form, .view)
+@Prototype(style: .labeled, kinds: .form)
 struct Author {
     let name: String
 }
 
-@Prototype(kinds: .form)
+@Prototype(style: .inline, kinds: .form)
 struct Article {
     var title: String
     var content: String
