@@ -1,7 +1,22 @@
 import Foundation
 
-public enum PrototypeMacroError: Error {
-    case unsupportedPeerDeclaration
+public enum PrototypeMacrosError: Error {
+    public enum MacroAttachment: String {
+        case variableDeclaration = "`var`, `let` declaration"
+        case classOrStructDeclaration = "`class` or `struct` declaration"
+    }
+    
+    public enum MacroOfType: String {
+        case none
+        case string = "`String`"
+    }
+    
+    case macro(
+        _ macro: String,
+        canOnlyBeAttachedTo: MacroAttachment,
+        ofType: MacroOfType = .none
+    )
+    
     case invalidPrototypeKindsArgument
     case missingPrototypeKindsArgument
     case duplicatePrototypeKindArgument
@@ -13,12 +28,15 @@ public enum PrototypeMacroError: Error {
 }
 
 #warning("Add error localizations strings")
-extension PrototypeMacroError: CustomDebugStringConvertible {
+extension PrototypeMacrosError: CustomDebugStringConvertible {
     public var debugDescription: String {
         switch self {
-        case .unsupportedPeerDeclaration:
-            "Prototype macro can only be attached to `struct` or `class` declarations."
-
+        case let .macro(macro, attachment, type) where type == .none:
+            "Macro \(macro) can only be attached to \(attachment)."
+            
+        case let .macro(macro, attachment, type):
+            "Macro \(macro) can only be attached to \(attachment) of type \(type)."
+            
         case .invalidPrototypeKindsArgument:
             "Invalid argument given for Prototype(...) macro"
 

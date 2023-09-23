@@ -10,7 +10,9 @@ public struct PrototypeMacro: PeerMacro {
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
-        guard isSupportedPeerDeclaration(declaration) else { throw PrototypeMacroError.unsupportedPeerDeclaration }
+        guard isSupportedPeerDeclaration(declaration) else {
+            throw PrototypeMacrosError.macro("Prototype", canOnlyBeAttachedTo: .classOrStructDeclaration)
+        }
         
         let arguments = try PrototypeArguments(from: node)
         let spec = try PrototypeSpec(parsing: declaration)
@@ -202,7 +204,7 @@ extension PrototypeMacro {
             let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
             !arguments.isEmpty
         else {
-            throw PrototypeMacroError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missingPrototypeKindsArgument
         }
         
         let validPrototypeKinds = [prototypeKindIdentifierForm, prototypeKindIdentifierView]
@@ -216,7 +218,7 @@ extension PrototypeMacro {
                 .text
             
             guard let identifier, validPrototypeKinds.contains(identifier) else {
-                throw PrototypeMacroError.invalidPrototypeKindsArgument
+                throw PrototypeMacrosError.invalidPrototypeKindsArgument
             }
             
             return identifier
@@ -225,7 +227,7 @@ extension PrototypeMacro {
         let distinctPrototypeKinds = Set(parsedPrototypeKinds)
         
         guard parsedPrototypeKinds.count == distinctPrototypeKinds.count else {
-            throw PrototypeMacroError.duplicatePrototypeKindArgument
+            throw PrototypeMacrosError.duplicatePrototypeKindArgument
         }
         
         return parsedPrototypeKinds

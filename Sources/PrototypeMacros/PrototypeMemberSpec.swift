@@ -73,19 +73,19 @@ public struct PrototypeMemberSpec {
     
     public init(parsing declaration: VariableDeclSyntax) throws {
         guard let binding = declaration.bindings.first else {
-            throw PrototypeMacroError.missingMemberPatternBinding
+            throw PrototypeMacrosError.missingMemberPatternBinding
         }
         
         guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.trimmed.text else {
-            throw PrototypeMacroError.unsupportedMemberPatternBinding
+            throw PrototypeMacrosError.unsupportedMemberPatternBinding
         }
         
         guard let typeAnnotation = binding.typeAnnotation else {
-            throw PrototypeMacroError.missingMemberPatternTypeAnnotation(member: name)
+            throw PrototypeMacrosError.missingMemberPatternTypeAnnotation(member: name)
         }
         
         guard let type = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.trimmed.text else {
-            throw PrototypeMacroError.unsupportedMemberPatternTypeAnnotation(type: typeAnnotation.type.description, member: name)
+            throw PrototypeMacrosError.unsupportedMemberPatternTypeAnnotation(type: typeAnnotation.type.description, member: name)
         }
         
         var attributes: PrototypeMemberAttributes = .visible

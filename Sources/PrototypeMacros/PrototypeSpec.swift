@@ -52,7 +52,7 @@ public struct PrototypeSpec {
         } else if let declaration = declaration.as(StructDeclSyntax.self) {
             try self.init(parsing: declaration)
         } else {
-            throw PrototypeMacroError.unsupportedPeerDeclaration
+            throw PrototypeMacrosError.macro("Prototype", canOnlyBeAttachedTo: .classOrStructDeclaration)
         }
     }
     

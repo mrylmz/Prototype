@@ -24,7 +24,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.unsupportedPeerDeclaration.debugDescription,
+                    message: PrototypeMacrosError.macro("Prototype", canOnlyBeAttachedTo: .classOrStructDeclaration).debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -48,7 +48,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.unsupportedPeerDeclaration.debugDescription,
+                    message: PrototypeMacrosError.macro("Prototype", canOnlyBeAttachedTo: .classOrStructDeclaration).debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -72,7 +72,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.invalidPrototypeKindsArgument.debugDescription,
+                    message: PrototypeMacrosError.invalidPrototypeKindsArgument.debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -96,7 +96,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.missingPrototypeKindsArgument.debugDescription,
+                    message: PrototypeMacrosError.missingPrototypeKindsArgument.debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -120,7 +120,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.duplicatePrototypeKindArgument.debugDescription,
+                    message: PrototypeMacrosError.duplicatePrototypeKindArgument.debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -151,7 +151,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.missingMemberPatternTypeAnnotation(member: "accessibilityEnabled").debugDescription,
+                    message: PrototypeMacrosError.missingMemberPatternTypeAnnotation(member: "accessibilityEnabled").debugDescription,
                     line: 3,
                     column: 1
                 )
@@ -182,7 +182,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacroError.unsupportedMemberPatternTypeAnnotation(type: "() -> Void", member: "callable").debugDescription,
+                    message: PrototypeMacrosError.unsupportedMemberPatternTypeAnnotation(type: "() -> Void", member: "callable").debugDescription,
                     line: 3,
                     column: 1
                 )

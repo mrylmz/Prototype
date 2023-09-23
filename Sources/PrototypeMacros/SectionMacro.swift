@@ -11,7 +11,7 @@ public struct SectionMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard declaration.is(VariableDeclSyntax.self) else {
-            throw SecureMacroError.unsupportedPeerDeclaration
+            throw PrototypeMacrosError.macro("Section", canOnlyBeAttachedTo: .variableDeclaration)
         }
         
         return []

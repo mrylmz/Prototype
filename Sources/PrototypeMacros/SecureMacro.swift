@@ -11,7 +11,7 @@ public struct SecureMacro: PeerMacro {
         in context: some MacroExpansionContext
     ) throws -> [DeclSyntax] {
         guard let declaration = declaration.as(VariableDeclSyntax.self) else {
-            throw SecureMacroError.unsupportedPeerDeclaration
+            throw PrototypeMacrosError.macro("Secure", canOnlyBeAttachedTo: .variableDeclaration)
         }
         
         let type = declaration
@@ -26,7 +26,7 @@ public struct SecureMacro: PeerMacro {
             .text
         
         guard let type, type == "String" else {
-            throw SecureMacroError.unsupportedPeerDeclaration
+            throw PrototypeMacrosError.macro("Secure", canOnlyBeAttachedTo: .variableDeclaration, ofType: .string)
         }
         
         return []

@@ -8,7 +8,7 @@ public struct PrototypeArguments {
     
     public init(from attribute: AttributeSyntax) throws {
         guard let arguments = attribute.arguments?.as(LabeledExprListSyntax.self), !arguments.isEmpty else {
-            throw PrototypeMacroError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missingPrototypeKindsArgument
         }
         
         /*
@@ -35,7 +35,7 @@ public struct PrototypeArguments {
         ╰─trailingComma: comma
          */
         guard let firstKindsArgument = attribute.argument(labeled: "kinds") else {
-            throw PrototypeMacroError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missingPrototypeKindsArgument
         }
         
         /*
@@ -53,7 +53,7 @@ public struct PrototypeArguments {
         let distinctPrototypeKinds = Set(parsedPrototypeKinds)
         
         guard parsedPrototypeKinds.count == Set(parsedPrototypeKinds).count else {
-            throw PrototypeMacroError.duplicatePrototypeKindArgument
+            throw PrototypeMacrosError.duplicatePrototypeKindArgument
         }
         
         self.style = styleIdentifier.flatMap { PrototypeStyle(rawValue: $0) } ?? PrototypeStyle.default
@@ -71,7 +71,7 @@ extension PrototypeMacro {
             let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
             !arguments.isEmpty
         else {
-            throw PrototypeMacroError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missingPrototypeKindsArgument
         }
         
         let validPrototypeKinds = [prototypeKindIdentifierForm, prototypeKindIdentifierView]
@@ -85,7 +85,7 @@ extension PrototypeMacro {
                 .text
             
             guard let identifier, validPrototypeKinds.contains(identifier) else {
-                throw PrototypeMacroError.invalidPrototypeKindsArgument
+                throw PrototypeMacrosError.invalidPrototypeKindsArgument
             }
             
             return identifier
@@ -94,7 +94,7 @@ extension PrototypeMacro {
         let distinctPrototypeKinds = Set(parsedPrototypeKinds)
         
         guard parsedPrototypeKinds.count == distinctPrototypeKinds.count else {
-            throw PrototypeMacroError.duplicatePrototypeKindArgument
+            throw PrototypeMacrosError.duplicatePrototypeKindArgument
         }
         
         return parsedPrototypeKinds

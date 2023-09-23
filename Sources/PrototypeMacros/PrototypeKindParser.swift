@@ -20,7 +20,7 @@ extension PrototypeKind {
             .text
         
         guard let identifier, let kind = Self(rawValue: identifier) else {
-            throw PrototypeMacroError.invalidPrototypeKindsArgument
+            throw PrototypeMacrosError.invalidPrototypeKindsArgument
         }
         
         self = kind
