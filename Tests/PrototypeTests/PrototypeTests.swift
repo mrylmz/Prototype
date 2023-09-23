@@ -72,7 +72,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacrosError.invalidPrototypeKindsArgument.debugDescription,
+                    message: PrototypeMacrosError.invalid(argument: "kinds: .unknown", givenForArgument: .kinds, ofMacro: .prototype).debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -96,7 +96,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacrosError.missingPrototypeKindsArgument.debugDescription,
+                    message: PrototypeMacrosError.missing(argument: .kinds, ofMacro: .prototype).debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -112,7 +112,7 @@ final class PrototypeTests: XCTestCase {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
-            @Prototype(kinds: .view, .form, .form)
+            @Prototype(kinds: .view, .form, .form, .view)
             struct MyStruct {}
             """,
             expandedSource: """
@@ -120,7 +120,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacrosError.duplicatePrototypeKindArgument.debugDescription,
+                    message: PrototypeMacrosError.duplicate(argument: "form, view", givenForArgument: .kinds, ofMacro: .prototype).debugDescription,
                     line: 1,
                     column: 1
                 )
@@ -151,7 +151,7 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacrosError.missingMemberPatternTypeAnnotation(member: "accessibilityEnabled").debugDescription,
+                    message: PrototypeMacrosError.missingSyntax(.typeAnnotation, forMember: "accessibilityEnabled", ofMacro: .prototype).debugDescription,
                     line: 3,
                     column: 1
                 )
@@ -182,11 +182,96 @@ final class PrototypeTests: XCTestCase {
             """,
             diagnostics: [
                 DiagnosticSpec(
-                    message: PrototypeMacrosError.unsupportedMemberPatternTypeAnnotation(type: "() -> Void", member: "callable").debugDescription,
+                    message: PrototypeMacrosError.unsupportedType("() -> Void", forMember: "callable", ofMacro: .prototype).debugDescription,
                     line: 3,
                     column: 1
                 )
             ],
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testPrototypeMacroErrorUnsupportedPatternBinding() throws {
+        #if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            import SwiftUI
+
+            @Prototype(kinds: .form)
+            class MyClass {
+                var (x, y): (Int, Int)
+            }
+            """,
+            expandedSource: """
+            import SwiftUI
+            class MyClass {
+                var (x, y): (Int, Int)
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(
+                    message: PrototypeMacrosError.unsupportedPatternBinding("(x, y)", givenInMemberListOfMacro: .prototype).debugDescription,
+                    line: 3,
+                    column: 1
+                )
+            ],
+            macros: testMacros
+        )
+        #else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+        #endif
+    }
+    
+    func testPrototypeMacroWithSettingsKind() throws {
+        #if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            import SwiftUI
+
+            @Prototype(style: .inline, kinds: .settings)
+            struct General {
+                var showPreview: Bool = false
+                var text: String = "Hello World!"
+                var fontSize: Float = 12.0
+            }
+            """,
+            expandedSource: """
+            import SwiftUI
+            struct General {
+                var showPreview: Bool = false
+                var text: String = "Hello World!"
+                var fontSize: Double = 12.0
+            }
+
+            struct GeneralSettingsView: View {
+                @AppStorage("General.showPreview") private var showPreview: Bool = false
+                @AppStorage("General.text") private var text: String = "Hello World!"
+                @AppStorage("General.fontSize") private var fontSize: Double = 12.0
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+
+                public init<Footer>(numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+
+                public var body: some View {
+                    Form {
+                        Toggle("GeneralSettingsView.showPreview", isOn: $showPreview)
+                        TextField("GeneralSettingsView.text", text: $text)
+                        TextField("GeneralSettingsView.fontSize", value: $fontSize, formatter: numberFormatter)
+
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
             macros: testMacros
         )
         #else

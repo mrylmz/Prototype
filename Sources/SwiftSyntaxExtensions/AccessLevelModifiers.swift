@@ -1,7 +1,7 @@
 import Foundation
 import SwiftSyntax
 
-#warning("Add documentation")
+/// An option set describing the access level modifiers of a `declaration`.
 public struct AccessLevelModifiers: OptionSet {
     public let rawValue: UInt16
     
@@ -9,16 +9,37 @@ public struct AccessLevelModifiers: OptionSet {
         self.rawValue = rawValue
     }
     
+    /// Access level modifier option describing a `declaration` with no access modifier.
     public static let none: Self = .init([])
+    
+    /// Access level modifier option describing the `private` access modifier of a `declaration`.
     public static let `private`: Self = .init(rawValue: 1 << 0)
+    
+    /// Access level modifier option describing the `private(set)` access modifier of a `declaration`.
     public static let privateSet: Self = .init(rawValue: 1 << 1)
+    
+    /// Access level modifier option describing the `fileprivate` access modifier of a `declaration`.
     public static let `fileprivate`: Self = .init(rawValue: 1 << 2)
+    
+    /// Access level modifier option describing the `fileprivate(set)` access modifier of a `declaration`.
     public static let fileprivateSet: Self = .init(rawValue: 1 << 3)
+    
+    /// Access level modifier option describing the `internal` access modifier of a `declaration`.
     public static let `internal`: Self = .init(rawValue: 1 << 4)
+    
+    /// Access level modifier option describing the `internal(set)` access modifier of a `declaration`.
     public static let internalSet: Self = .init(rawValue: 1 << 5)
+    
+    /// Access level modifier option describing the `public` access modifier of a `declaration`.
     public static let `public`: Self = .init(rawValue: 1 << 6)
+    
+    /// Access level modifier option describing the `public(set)` access modifier of a `declaration`.
     public static let publicSet: Self = .init(rawValue: 1 << 7)
+    
+    /// Access level modifier option describing the `open` access modifier of a `declaration`.
     public static let `open`: Self = .init(rawValue: 1 << 8)
+    
+    /// Access level modifier option describing the `open(set)` access modifier of a `declaration`.
     public static let openSet: Self = .init(rawValue: 1 << 9)
 }
 

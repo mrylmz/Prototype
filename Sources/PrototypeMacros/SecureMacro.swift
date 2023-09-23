@@ -4,6 +4,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxExtensions
 
+/// The peer macro implementation of the `@Secure` macro.
 public struct SecureMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,

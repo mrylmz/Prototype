@@ -8,7 +8,7 @@ public struct PrototypeArguments {
     
     public init(from attribute: AttributeSyntax) throws {
         guard let arguments = attribute.arguments?.as(LabeledExprListSyntax.self), !arguments.isEmpty else {
-            throw PrototypeMacrosError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missing(argument: .kinds, ofMacro: .prototype)
         }
         
         /*
@@ -35,7 +35,7 @@ public struct PrototypeArguments {
         ╰─trailingComma: comma
          */
         guard let firstKindsArgument = attribute.argument(labeled: "kinds") else {
-            throw PrototypeMacrosError.missingPrototypeKindsArgument
+            throw PrototypeMacrosError.missing(argument: .kinds, ofMacro: .prototype)
         }
         
         /*
@@ -52,51 +52,21 @@ public struct PrototypeArguments {
         let parsedPrototypeKinds = try allKindsArguments.map(PrototypeKind.init(from:))
         let distinctPrototypeKinds = Set(parsedPrototypeKinds)
         
-        guard parsedPrototypeKinds.count == Set(parsedPrototypeKinds).count else {
-            throw PrototypeMacrosError.duplicatePrototypeKindArgument
+        guard parsedPrototypeKinds.count == distinctPrototypeKinds.count else {
+            var duplicatePrototypeKinds = parsedPrototypeKinds
+            
+            distinctPrototypeKinds.forEach { kind in
+                if let index = duplicatePrototypeKinds.firstIndex(of: kind) {
+                    duplicatePrototypeKinds.remove(at: index)
+                }
+            }
+            
+            let argument = duplicatePrototypeKinds.map { $0.rawValue }.joined(separator: ", ")
+            
+            throw PrototypeMacrosError.duplicate(argument: argument, givenForArgument: .kinds, ofMacro: .prototype)
         }
         
         self.style = styleIdentifier.flatMap { PrototypeStyle(rawValue: $0) } ?? PrototypeStyle.default
         self.kinds = distinctPrototypeKinds
-    }
-}
-
-
-extension PrototypeMacro {
-    private static let prototypeKindIdentifierForm: String = "form"
-    private static let prototypeKindIdentifierView: String = "view"
-
-    private static func parsePrototypeKinds(from attribute: AttributeSyntax) throws -> [String] {
-        guard
-            let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
-            !arguments.isEmpty
-        else {
-            throw PrototypeMacrosError.missingPrototypeKindsArgument
-        }
-        
-        let validPrototypeKinds = [prototypeKindIdentifierForm, prototypeKindIdentifierView]
-        let parsedPrototypeKinds = try arguments.map { element in
-            let identifier = element
-                .expression
-                .as(MemberAccessExprSyntax.self)?
-                .declName
-                .baseName
-                .trimmed
-                .text
-            
-            guard let identifier, validPrototypeKinds.contains(identifier) else {
-                throw PrototypeMacrosError.invalidPrototypeKindsArgument
-            }
-            
-            return identifier
-        }
-        
-        let distinctPrototypeKinds = Set(parsedPrototypeKinds)
-        
-        guard parsedPrototypeKinds.count == distinctPrototypeKinds.count else {
-            throw PrototypeMacrosError.duplicatePrototypeKindArgument
-        }
-        
-        return parsedPrototypeKinds
     }
 }

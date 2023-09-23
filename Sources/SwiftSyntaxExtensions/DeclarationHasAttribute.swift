@@ -102,12 +102,20 @@ extension DeclSyntaxProtocol {
         return AttributeListSyntax()
     }
     
+    /// Validates if `DeclSyntaxProtocol` is containing an `attribute` named `name`.
+    ///  
+    /// - Parameter name: The `name` to check for if it is in the atrribute list of the `DeclSyntaxProtocol`.
+    /// - Returns: A `Bool` value indicating if the `DeclSyntaxProtocol` contains an attribute with the given `name`.
     public func hasAttribute(named name: String) -> Bool {
         attributeList.contains { attribute in
             attribute.as(AttributeSyntax.self)?.attributeName.as(IdentifierTypeSyntax.self)?.name.trimmed.text == name
         }
     }
     
+    /// Searches for an `attribute` named as `name` in a `DeclSyntaxProtocol`.
+    ///
+    /// - Parameter label: The `name` to check for if it is in the attribute list of the `DeclSyntaxProtocol`.
+    /// - Returns: The `attribute` having the given `name` as attribute name.
     public func attribute(named name: String) -> AttributeSyntax? {
         attributeList
             .compactMap { attribute in attribute.as(AttributeSyntax.self) }

@@ -48,44 +48,47 @@ extension PrototypeMemberAttributes {
     public static let modifiable: Self = .init(rawValue: 1 << 1)
     public static let secure: Self = .init(rawValue: 1 << 2)
     public static let section: Self = .init(rawValue: 1 << 3)
+    public static let description: Self = .init(rawValue: 1 << 4)
 }
 
 public struct PrototypeMemberSpec {
     public let accessLevelModifiers: AccessLevelModifiers
     public let name: String
     public let type: String
+    public let initializer: InitializerClauseSyntax?
     public let attributes: PrototypeMemberAttributes
     public let sectionTitle: String?
+    public let descriptionTitle: String?
     
     public init(
         accessLevelModifiers: AccessLevelModifiers,
         name: String,
         type: String,
+        initializer: InitializerClauseSyntax?,
         attributes: PrototypeMemberAttributes,
-        sectionTitle: String?
+        sectionTitle: String?,
+        descriptionTitle: String?
     ) {
         self.accessLevelModifiers = accessLevelModifiers
         self.name = name
         self.type = type
+        self.initializer = initializer
         self.attributes = attributes
         self.sectionTitle = sectionTitle
+        self.descriptionTitle = descriptionTitle
     }
     
-    public init(parsing declaration: VariableDeclSyntax) throws {
-        guard let binding = declaration.bindings.first else {
-            throw PrototypeMacrosError.missingMemberPatternBinding
-        }
-        
+    public init(parsing binding: PatternBindingListSyntax.Element, of declaration: VariableDeclSyntax) throws {
         guard let name = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier.trimmed.text else {
-            throw PrototypeMacrosError.unsupportedMemberPatternBinding
+            throw PrototypeMacrosError.unsupportedPatternBinding(binding.pattern.description, givenInMemberListOfMacro: .prototype)
         }
         
         guard let typeAnnotation = binding.typeAnnotation else {
-            throw PrototypeMacrosError.missingMemberPatternTypeAnnotation(member: name)
+            throw PrototypeMacrosError.missingSyntax(.typeAnnotation, forMember: name, ofMacro: .prototype)
         }
         
         guard let type = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.trimmed.text else {
-            throw PrototypeMacrosError.unsupportedMemberPatternTypeAnnotation(type: typeAnnotation.type.description, member: name)
+            throw PrototypeMacrosError.unsupportedType(typeAnnotation.type.description, forMember: name, ofMacro: .prototype)
         }
         
         var attributes: PrototypeMemberAttributes = .visible
@@ -103,25 +106,40 @@ public struct PrototypeMemberSpec {
             attributes.insert(.secure)
         }
         
-        var sectionTitle: String? = nil
-        if let attribute = declaration.attribute(named: "Section") {
+        let sectionTitle = declaration
+            .attribute(named: "Section")?
+            .arguments?.as(LabeledExprListSyntax.self)?
+            .first?.as(LabeledExprSyntax.self)?
+            .expression.as(StringLiteralExprSyntax.self)?
+            .segments.first?.as(StringSegmentSyntax.self)?
+            .content
+            .text
+        
+        if sectionTitle != nil {
             attributes.insert(.section)
-            
-            sectionTitle = attribute
-                .arguments?.as(LabeledExprListSyntax.self)?
-                .first?.as(LabeledExprSyntax.self)?
-                .expression.as(StringLiteralExprSyntax.self)?
-                .segments.first?.as(StringSegmentSyntax.self)?
-                .content
-                .text
+        }
+        
+        let descriptionTitle = declaration
+            .attribute(named: "Description")?
+            .arguments?.as(LabeledExprListSyntax.self)?
+            .first?.as(LabeledExprSyntax.self)?
+            .expression.as(StringLiteralExprSyntax.self)?
+            .segments.first?.as(StringSegmentSyntax.self)?
+            .content
+            .text
+        
+        if descriptionTitle != nil {
+            attributes.insert(.description)
         }
         
         self.init(
             accessLevelModifiers: declaration.accessLevelModifiers,
             name: name,
             type: type,
+            initializer: binding.initializer,
             attributes: attributes,
-            sectionTitle: sectionTitle
+            sectionTitle: sectionTitle,
+            descriptionTitle: descriptionTitle
         )
     }
 }

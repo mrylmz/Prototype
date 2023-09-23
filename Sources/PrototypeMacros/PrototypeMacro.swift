@@ -4,6 +4,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import SwiftSyntaxExtensions
 
+/// The peer macro implementation of the `@Prototype` macro.
 public struct PrototypeMacro: PeerMacro {
     public static func expansion(
         of node: AttributeSyntax,
@@ -52,15 +53,78 @@ public struct PrototypeMacro: PeerMacro {
                 \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
                 @Binding public var model: \(raw: spec.name)
                 private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
                 
-                public init(model: Binding<\(raw: spec.name)>) {
+                public init(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init()) {
                     self._model = model
                     self.footer = nil
+                    self.numberFormatter = numberFormatter
                 }
                 
-                public init<Footer>(model: Binding<\(raw: spec.name)>, @ViewBuilder footer: () -> Footer) where Footer: View {
+                public init<Footer>(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
                     self._model = model
                     self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+
+                public var body: some View {
+                    Form {
+                        \(raw: body.joined(separator: "\n"))
+                
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+                }
+                """
+                )
+                
+            case .settings:
+                let members = spec.members.filter { member in member.attributes.contains(.visible) }
+                var isInSection = false
+                var properties: [String] = []
+                var body: [String] = []
+                
+                members.forEach { member in
+                    let key = "\(spec.name).\(member.name)"
+                    let initializer = member.initializer?.description ?? "= .init()"
+                    
+                    properties.append("@AppStorage(\"\(key)\") private var \(member.name): \(member.type) \(initializer)")
+                }
+                
+                try members.forEach { member in
+                    if member.attributes.contains(.section) {
+                        if isInSection {
+                            body.append("}")
+                        }
+                        
+                        isInSection = true
+                        
+                        if let sectionTitle = member.sectionTitle {
+                            body.append("Section(header: Text(\"\(spec.name)Form.\(sectionTitle)\")) {")
+                        } else {
+                            body.append("Section {")
+                        }
+                    }
+                    
+                    body.append(try buildMemberSpecSettingsSyntax(arguments: arguments, keyPrefix: "\(spec.name)SettingsView", spec: member))
+                }
+                
+                if isInSection {
+                    body.append("}")
+                }
+                
+                result.append(
+                """
+                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)SettingsView: View {
+                \(raw: properties.joined(separator: "\n"))
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+                
+                public init<Footer>(numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
                 }
 
                 public var body: some View {
@@ -77,13 +141,34 @@ public struct PrototypeMacro: PeerMacro {
                 )
                 
             case .view:
-                var membersBody = try spec.members
-                    .filter { member in member.attributes.contains(.visible) }
-                    .map { member in try buildMemberSpecViewSyntax(member) }
-                    .joined(separator: "\n")
+                let members = spec.members.filter { member in member.attributes.contains(.visible) }
+                var isInSection = false
+                var body: [String] = []
                 
-                if membersBody.isEmpty {
-                    membersBody = "EmptyView()"
+                try members.forEach { member in
+                    if member.attributes.contains(.section) {
+                        if isInSection {
+                            body.append("}")
+                        }
+                        
+                        isInSection = true
+                        
+                        if let sectionTitle = member.sectionTitle {
+                            body.append("GroupBox(\"\(spec.name)View.\(sectionTitle)\") {")
+                        } else {
+                            body.append("GroupBox {")
+                        }
+                    }
+                    
+                    body.append(try buildMemberSpecViewSyntax(arguments: arguments, keyPrefix: "\(spec.name)View", spec: member))
+                }
+                
+                if isInSection {
+                    body.append("}")
+                }
+                
+                if body.isEmpty {
+                    body.append("EmptyView()")
                 }
                 
                 result.append(
@@ -96,7 +181,7 @@ public struct PrototypeMacro: PeerMacro {
                 }
 
                 public var body: some View {
-                    \(raw: membersBody)
+                    \(raw: body.joined(separator: "\n"))
                 }
                 }
                 """
@@ -118,6 +203,12 @@ extension PrototypeMacro {
 }
 
 extension PrototypeMacro {
+    private static let numericTypes = [
+        "Int8", "Int16", "Int32", "Int64", "Int",
+        "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
+        "Float16", "Float32", "Float64", "Float80", "Float", "Double"
+    ]
+
     private static func buildMemberSpecFormSyntax(
         arguments: PrototypeArguments,
         keyPrefix: String,
@@ -126,24 +217,17 @@ extension PrototypeMacro {
         guard spec.attributes.contains(.visible) else { return "" }
 
         var result: [String] = []
-
-        #warning("Add macro support for text field validators")
-        #warning("Add text field support for float and other numeric primitive types with validators")
-        #warning("Only make numerics to Stepper by using an attribute like @Secure")
-
         let key = "\"\(keyPrefix).\(spec.name)\""
+        let labelKey = "\"\(keyPrefix).\(spec.name).label\""
         let binding = spec.attributes.contains(.modifiable) ? "$model.\(spec.name)" : ".constant(model.\(spec.name))"
 
         if arguments.style == .labeled {
-            result.append("LabeledContent(\(key)) {")
+            result.append("LabeledContent(\(labelKey)) {")
         }
         
         switch spec.type {
         case "Bool":
             result.append("Toggle(\(key), isOn: \(binding))")
-
-        case "Int":
-            result.append("Stepper(\(key), value: \(binding))")
 
         case "String":
             if spec.attributes.contains(.secure) {
@@ -156,7 +240,11 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            result.append("\(spec.type)Form(model: \(binding))")
+            if numericTypes.contains(spec.type) {
+                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+            } else {
+                result.append("\(spec.type)Form(model: \(binding))")
+            }
         }
         
         if arguments.style == .labeled {
@@ -166,70 +254,100 @@ extension PrototypeMacro {
         return result.joined(separator: "\n")
     }
     
-    private static func buildMemberSpecViewSyntax(_ spec: PrototypeMemberSpec) throws -> String {
+    private static func buildMemberSpecSettingsSyntax(
+        arguments: PrototypeArguments,
+        keyPrefix: String,
+        spec: PrototypeMemberSpec
+    ) throws -> String {
         guard spec.attributes.contains(.visible) else { return "" }
 
         var result: [String] = []
 
-        #warning("Rethink usage of views...")
+        let key = "\"\(keyPrefix).\(spec.name)\""
+        let labelKey = "\"\(keyPrefix).\(spec.name).label\""
+        let binding = spec.attributes.contains(.modifiable) ? "$\(spec.name)" : ".constant(\(spec.name))"
 
-        let value = "\"\\(model.\(spec.name))\""
-
+        if arguments.style == .labeled {
+            result.append("LabeledContent(\(labelKey)) {")
+        }
+        
         switch spec.type {
         case "Bool":
-            result.append("Text(\(value))")
-
-        case "Int":
-            result.append("Text(\(value))")
+            result.append("Toggle(\(key), isOn: \(binding))")
 
         case "String":
-            if !spec.attributes.contains(.secure) {
-                result.append("Text(\(value))")
+            if spec.attributes.contains(.secure) {
+                result.append("SecureField(\(key), text: \(binding))")
+            } else {
+                result.append("TextField(\(key), text: \(binding))")
             }
             
+        case "Date":
+            result.append("DatePicker(\(key), selection: \(binding))")
+
         default:
-            result.append("\(spec.type)View(model: \(value))")
+            if numericTypes.contains(spec.type) {
+                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+            } else {
+                result.append("\(spec.type)Form(model: \(binding))")
+            }
+        }
+        
+        if arguments.style == .labeled {
+            result.append("}")
         }
         
         return result.joined(separator: "\n")
     }
-}
+    
+    private static func buildMemberSpecViewSyntax(
+        arguments: PrototypeArguments,
+        keyPrefix: String,
+        spec: PrototypeMemberSpec
+    ) throws -> String {
+        guard spec.attributes.contains(.visible) else { return "" }
 
-extension PrototypeMacro {
-    private static let prototypeKindIdentifierForm: String = "form"
-    private static let prototypeKindIdentifierView: String = "view"
+        var result: [String] = []
 
-    private static func parsePrototypeKinds(from attribute: AttributeSyntax) throws -> [String] {
-        guard
-            let arguments = attribute.arguments?.as(LabeledExprListSyntax.self),
-            !arguments.isEmpty
-        else {
-            throw PrototypeMacrosError.missingPrototypeKindsArgument
+        let key = "\"\(keyPrefix).\(spec.name)\""
+        let labelKey = "\"\(keyPrefix).\(spec.name).label\""
+
+        if arguments.style == .labeled {
+            result.append("LabeledContent(\(labelKey)) {")
         }
         
-        let validPrototypeKinds = [prototypeKindIdentifierForm, prototypeKindIdentifierView]
-        let parsedPrototypeKinds = try arguments.map { element in
-            let identifier = element
-                .expression
-                .as(MemberAccessExprSyntax.self)?
-                .declName
-                .baseName
-                .trimmed
-                .text
-            
-            guard let identifier, validPrototypeKinds.contains(identifier) else {
-                throw PrototypeMacrosError.invalidPrototypeKindsArgument
+        let numericTypes = [
+            "Int8", "Int16", "Int32", "Int64", "Int", 
+            "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
+            "Float16", "Float32", "Float64", "Float80", "Float", "Double"
+        ]
+        
+        if spec.type == "Bool" {
+            result.append(
+            """
+            LabeledContent(\(key)) {
+                Text(model.\(spec.name).description)
             }
-            
-            return identifier
+            """
+            )
+        } else if spec.type == "String" {
+            if spec.attributes.contains(.secure) {
+                result.append("LabeledContent(\(key), value: \"********\")")
+            } else {
+                result.append("LabeledContent(\(key), value: model.\(spec.name))")
+            }
+        } else if spec.type == "Date" {
+            result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
+        } else if numericTypes.contains(spec.type) {
+            result.append("LabeledContent(\(key), value: model.\(spec.name), format: .number)")
+        } else {
+            result.append("\(spec.type)View(model: model.\(spec.name))")
         }
         
-        let distinctPrototypeKinds = Set(parsedPrototypeKinds)
-        
-        guard parsedPrototypeKinds.count == distinctPrototypeKinds.count else {
-            throw PrototypeMacrosError.duplicatePrototypeKindArgument
+        if arguments.style == .labeled {
+            result.append("}")
         }
         
-        return parsedPrototypeKinds
+        return result.joined(separator: "\n")
     }
 }

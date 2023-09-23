@@ -59,11 +59,13 @@ public struct PrototypeSpec {
     public init(parsing declaration: ClassDeclSyntax) throws {
         let members: [PrototypeMemberSpec] = try declaration.memberBlock.members.compactMap { member in
             if let declaration = member.decl.as(VariableDeclSyntax.self) {
-                return try PrototypeMemberSpec(parsing: declaration)
+                return try declaration.bindings.map { binding in
+                    try PrototypeMemberSpec(parsing: binding, of: declaration)
+                }
             }
             
             return nil
-        }
+        }.reduce([], +)
         
         self.init(accessLevelModifiers: declaration.accessLevelModifiers, name: declaration.name.trimmed.text, members: members)
     }
@@ -71,11 +73,13 @@ public struct PrototypeSpec {
     public init(parsing declaration: StructDeclSyntax) throws {
         let members: [PrototypeMemberSpec] = try declaration.memberBlock.members.compactMap { member in
             if let declaration = member.decl.as(VariableDeclSyntax.self) {
-                return try PrototypeMemberSpec(parsing: declaration)
+                return try declaration.bindings.map { binding in
+                    try PrototypeMemberSpec(parsing: binding, of: declaration)
+                }
             }
             
             return nil
-        }
+        }.reduce([], +)
         
         self.init(accessLevelModifiers: declaration.accessLevelModifiers, name: declaration.name.trimmed.text, members: members)
     }

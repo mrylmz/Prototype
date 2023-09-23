@@ -20,30 +20,47 @@ Here's a quick example of Prototype in action:
 
 Source:
 ```swift
-@Prototype(style: .labeled, kinds: .form)
+@Prototype(style: .labeled, kinds: .form, .view)
 struct Author {
     let name: String
 }
 ```
 Macro Expansion:
 ```swift
+struct AuthorView: View {
+    public let model: Author
+
+    public init(model: Author) {
+        self.model = model
+    }
+
+    public var body: some View {
+        LabeledContent("AuthorView.name.label") {
+            LabeledContent("AuthorView.name", value: model.name)
+        }
+    }
+}
+
 struct AuthorForm: View {
     @Binding public var model: Author
     private let footer: AnyView?
+    private let numberFormatter: NumberFormatter
 
-    public init(model: Binding<Author>) {
+    public init(model: Binding<Author>, numberFormatter: NumberFormatter = .init()) {
         self._model = model
         self.footer = nil
+        self.numberFormatter = numberFormatter
     }
 
-    public init<Footer>(model: Binding<Author>, @ViewBuilder footer: () -> Footer) where Footer: View {
+    public init<Footer>(model: Binding<Author>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
         self._model = model
         self.footer = AnyView(erasing: footer())
+        self.numberFormatter = numberFormatter
     }
 
     public var body: some View {
         Form {
-            LabeledContent("AuthorForm.name") {
+            LabeledContent("AuthorForm.name.label") {
                 TextField("AuthorForm.name", text: .constant(model.name))
             }
 
@@ -57,7 +74,7 @@ struct AuthorForm: View {
 
 Source:
 ```swift
-@Prototype(style: .inline, kinds: .form)
+@Prototype(style: .inline, kinds: .form, .view)
 struct Article {
     var title: String
     var content: String
@@ -74,15 +91,18 @@ Macro Expansion:
 struct ArticleForm: View {
     @Binding public var model: Article
     private let footer: AnyView?
+    private let numberFormatter: NumberFormatter
 
-    public init(model: Binding<Article>) {
+    public init(model: Binding<Article>, numberFormatter: NumberFormatter = .init()) {
         self._model = model
         self.footer = nil
+        self.numberFormatter = numberFormatter
     }
 
-    public init<Footer>(model: Binding<Article>, @ViewBuilder footer: () -> Footer) where Footer: View {
+    public init<Footer>(model: Binding<Article>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
         self._model = model
         self.footer = AnyView(erasing: footer())
+        self.numberFormatter = numberFormatter
     }
 
     public var body: some View {
@@ -92,9 +112,70 @@ struct ArticleForm: View {
             SecureField("ArticleForm.password", text: $model.password)
             Section(header: Text("ArticleForm.metadata")) {
                 Toggle("ArticleForm.isPublished", isOn: $model.isPublished)
-                Stepper("ArticleForm.views", value: .constant(model.views))
+                TextField("ArticleForm.views", value: .constant(model.views), formatter: numberFormatter)
                 AuthorForm(model: .constant(model.author))
             }
+
+            if let footer {
+                footer
+            }
+        }
+    }
+}
+
+struct ArticleView: View {
+    public let model: Article
+
+    public init(model: Article) {
+        self.model = model
+    }
+
+    public var body: some View {
+        LabeledContent("ArticleView.title", value: model.title)
+        LabeledContent("ArticleView.content", value: model.content)
+        LabeledContent("ArticleView.password", value: "********")
+        GroupBox("ArticleView.metadata") {
+            LabeledContent("ArticleView.isPublished") {
+                Text(model.isPublished.description)
+            }
+            LabeledContent("ArticleView.views", value: model.views, format: .number)
+            AuthorView(model: model.author)
+        }
+    }
+}
+```
+
+Source:
+```swift
+@Prototype(style: .inline, kinds: .settings)
+struct General {
+    var boolValue: Bool = false
+    var intValue: Int = 0
+    var doubleValue: Double = 0
+    var stringValue: String = ""
+}
+```
+Macro Expansion:
+```swift
+struct GeneralSettingsView: View {
+    @AppStorage("General.boolValue") private var boolValue: Bool = false
+    @AppStorage("General.intValue") private var intValue: Int = 0
+    @AppStorage("General.doubleValue") private var doubleValue: Double = 0
+    @AppStorage("General.stringValue") private var stringValue: String = ""
+    private let footer: AnyView?
+    private let numberFormatter: NumberFormatter
+
+    public init<Footer>(numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+        self.footer = AnyView(erasing: footer())
+        self.numberFormatter = numberFormatter
+    }
+
+    public var body: some View {
+        Form {
+            Toggle("GeneralSettingsView.boolValue", isOn: $boolValue)
+            TextField("GeneralSettingsView.intValue", value: $intValue, formatter: numberFormatter)
+            TextField("GeneralSettingsView.doubleValue", value: $doubleValue, formatter: numberFormatter)
+            TextField("GeneralSettingsView.stringValue", text: $stringValue)
 
             if let footer {
                 footer
