@@ -4,13 +4,6 @@ import SwiftSyntax
 
 extension PrototypeKind {
     public init(from expression: LabeledExprSyntax) throws {
-        /*
-         LabeledExprSyntax
-         ╰─expression: MemberAccessExprSyntax
-           ├─period: period
-           ╰─declName: DeclReferenceExprSyntax
-             ╰─baseName: identifier("<#identifier#>")
-         */
         let identifier = expression
             .expression
             .as(MemberAccessExprSyntax.self)?

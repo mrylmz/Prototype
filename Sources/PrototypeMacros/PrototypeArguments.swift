@@ -11,42 +11,13 @@ public struct PrototypeArguments {
             throw PrototypeMacrosError.missing(argument: .kinds, ofMacro: .prototype)
         }
         
-        /*
-        Optional(LabeledExprSyntax
-        ├─ label: identifier("style")
-        ├─colon: colon
-        ├─expression: MemberAccessExprSyntax
-        │ ├─period: period
-        │ ╰─declName: DeclReferenceExprSyntax
-        │   ╰─baseName: identifier("labeled")
-        ╰─trailingComma: comma)
-         */
         let styleArgument = attribute.argument(labeled: "style")
         let styleIdentifier = styleArgument?.expression.as(MemberAccessExprSyntax.self)?.declName.baseName.trimmed.text
         
-        /*
-        LabeledExprSyntax
-        ├─label: identifier("kinds")
-        ├─colon: colon
-        ├─expression: MemberAccessExprSyntax
-        │ ├─period: period
-        │ ╰─declName: DeclReferenceExprSyntax
-        │   ╰─baseName: identifier("form")
-        ╰─trailingComma: comma
-         */
         guard let firstKindsArgument = attribute.argument(labeled: "kinds") else {
             throw PrototypeMacrosError.missing(argument: .kinds, ofMacro: .prototype)
         }
         
-        /*
-        [
-            LabeledExprSyntax
-            ╰─expression: MemberAccessExprSyntax
-              ├─period: period
-              ╰─declName: DeclReferenceExprSyntax
-                ╰─baseName: identifier("view")
-        ]
-         */
         let otherKindsArguments = attribute.arguments(after: firstKindsArgument)
         let allKindsArguments = [firstKindsArgument] + otherKindsArguments
         let parsedPrototypeKinds = try allKindsArguments.map(PrototypeKind.init(from:))

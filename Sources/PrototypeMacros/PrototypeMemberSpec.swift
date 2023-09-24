@@ -2,38 +2,6 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxExtensions
 
-/*
- 
-    ClassDeclSyntax
-    ├─name: identifier("Author")
-    ╰─memberBlock: MemberBlockSyntax
-        ├─leftBrace: leftBrace
-        ├─members: MemberBlockItemListSyntax
-        │ ╰─[0]: MemberBlockItemSyntax
-        │   ╰─decl: VariableDeclSyntax
-        │     ├─attributes: AttributeListSyntax
-        │     ├─modifiers: DeclModifierListSyntax
-        │     ├─bindingSpecifier: keyword(SwiftSyntax.Keyword.var)
-        │     ╰─bindings: PatternBindingListSyntax
-        │       ╰─[0]: PatternBindingSyntax
-        │         ├─pattern: IdentifierPatternSyntax
-        │         │ ╰─identifier: identifier("name")
-        │         ├─typeAnnotation: TypeAnnotationSyntax
-        │         │ ├─colon: colon
-        │         │ ╰─type: IdentifierTypeSyntax
-        │         │   ╰─name: identifier("String")
-        │         ╰─initializer: InitializerClauseSyntax
-        │           ├─equal: equal
-        │           ╰─value: StringLiteralExprSyntax
-        │             ├─openingQuote: stringQuote
-        │             ├─segments: StringLiteralSegmentListSyntax
-        │             │ ╰─[0]: StringSegmentSyntax
-        │             │   ╰─content: stringSegment("")
-        │             ╰─closingQuote: stringQuote
-        ╰─rightBrace: rightBrace
- 
- */
-
 public struct PrototypeMemberAttributes: OptionSet {
     public let rawValue: Int
     
