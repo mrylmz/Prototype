@@ -89,8 +89,8 @@ public struct PrototypeMacro: PeerMacro {
                 members.forEach { member in
                     let key = "\(spec.name).\(member.name)"
                     let initializer = member.initializer?.description ?? "= .init()"
-                    
-                    properties.append("@AppStorage(\"\(key)\") private var \(member.name): \(member.type) \(initializer)")
+                    let tail = member.type.isOptional ? "?" : ""
+                    properties.append("@AppStorage(\"\(key)\") private var \(member.name): \(member.type.name)\(tail) \(initializer)")
                 }
                 
                 try members.forEach { member in
@@ -225,7 +225,7 @@ extension PrototypeMacro {
             result.append("LabeledContent(\(labelKey)) {")
         }
         
-        switch spec.type {
+        switch spec.type.name {
         case "Bool":
             result.append("Toggle(\(key), isOn: \(binding))")
 
@@ -240,10 +240,10 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            if numericTypes.contains(spec.type) {
+            if numericTypes.contains(spec.type.name) {
                 result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
             } else {
-                result.append("\(spec.type)Form(model: \(binding))")
+                result.append("\(spec.type.name)Form(model: \(binding))")
             }
         }
         
@@ -271,7 +271,7 @@ extension PrototypeMacro {
             result.append("LabeledContent(\(labelKey)) {")
         }
         
-        switch spec.type {
+        switch spec.type.name {
         case "Bool":
             result.append("Toggle(\(key), isOn: \(binding))")
 
@@ -286,10 +286,10 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            if numericTypes.contains(spec.type) {
+            if numericTypes.contains(spec.type.name) {
                 result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
             } else {
-                result.append("\(spec.type)Form(model: \(binding))")
+                result.append("\(spec.type.name)Form(model: \(binding))")
             }
         }
         
@@ -322,7 +322,7 @@ extension PrototypeMacro {
             "Float16", "Float32", "Float64", "Float80", "Float", "Double"
         ]
         
-        if spec.type == "Bool" {
+        if spec.type.name == "Bool" {
             result.append(
             """
             LabeledContent(\(key)) {
@@ -330,18 +330,18 @@ extension PrototypeMacro {
             }
             """
             )
-        } else if spec.type == "String" {
+        } else if spec.type.name == "String" {
             if spec.attributes.contains(.secure) {
                 result.append("LabeledContent(\(key), value: \"********\")")
             } else {
                 result.append("LabeledContent(\(key), value: model.\(spec.name))")
             }
-        } else if spec.type == "Date" {
+        } else if spec.type.name == "Date" {
             result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
-        } else if numericTypes.contains(spec.type) {
+        } else if numericTypes.contains(spec.type.name) {
             result.append("LabeledContent(\(key), value: model.\(spec.name), format: .number)")
         } else {
-            result.append("\(spec.type)View(model: model.\(spec.name))")
+            result.append("\(spec.type.name)View(model: model.\(spec.name))")
         }
         
         if arguments.style == .labeled {

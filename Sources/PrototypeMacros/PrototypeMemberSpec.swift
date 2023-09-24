@@ -22,7 +22,7 @@ extension PrototypeMemberAttributes {
 public struct PrototypeMemberSpec {
     public let accessLevelModifiers: AccessLevelModifiers
     public let name: String
-    public let type: String
+    public let type: PrototypeTypeSpec
     public let initializer: InitializerClauseSyntax?
     public let attributes: PrototypeMemberAttributes
     public let sectionTitle: String?
@@ -31,7 +31,7 @@ public struct PrototypeMemberSpec {
     public init(
         accessLevelModifiers: AccessLevelModifiers,
         name: String,
-        type: String,
+        type: PrototypeTypeSpec,
         initializer: InitializerClauseSyntax?,
         attributes: PrototypeMemberAttributes,
         sectionTitle: String?,
@@ -55,7 +55,7 @@ public struct PrototypeMemberSpec {
             throw PrototypeMacrosError.missingSyntax(.typeAnnotation, forMember: name, ofMacro: .prototype)
         }
         
-        guard let type = typeAnnotation.type.as(IdentifierTypeSyntax.self)?.name.trimmed.text else {
+        guard let type = PrototypeTypeSpec(parsing: typeAnnotation) else {
             throw PrototypeMacrosError.unsupportedType(typeAnnotation.type.description, forMember: name, ofMacro: .prototype)
         }
         
