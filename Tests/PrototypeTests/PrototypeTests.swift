@@ -235,7 +235,7 @@ final class PrototypeTests: XCTestCase {
             struct General {
                 var showPreview: Bool = false
                 var text: String = "Hello World!"
-                var fontSize: Float = 12.0
+                var fontSize: Double = 12.0
             }
             """,
             expandedSource: """
