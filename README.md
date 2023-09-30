@@ -153,7 +153,12 @@ struct General {
     var intValue: Int = 0
     var doubleValue: Double = 0
     var stringValue: String = ""
+    var optionalBoolValue: Bool?
+    var optionalIntValue: Int?
+    var optionalDoubleValue: Double?
+    var optionalStringValue: String?
 }
+
 ```
 Macro Expansion:
 ```swift
@@ -162,6 +167,50 @@ struct GeneralSettingsView: View {
     @AppStorage("General.intValue") private var intValue: Int = 0
     @AppStorage("General.doubleValue") private var doubleValue: Double = 0
     @AppStorage("General.stringValue") private var stringValue: String = ""
+    @AppStorage("General.optionalBoolValue") private var optionalBoolValue: Bool?
+    @AppStorage("General.optionalIntValue") private var optionalIntValue: Int?
+    @AppStorage("General.optionalDoubleValue") private var optionalDoubleValue: Double?
+    @AppStorage("General.optionalStringValue") private var optionalStringValue: String?
+    private var optionalBoolValueBinding: Binding<Bool> {
+        Binding(
+            get: {
+                optionalBoolValue ?? false
+            },
+            set: {
+                optionalBoolValue = $0
+            }
+        )
+    }
+    private var optionalIntValueBinding: Binding<Int> {
+        Binding(
+            get: {
+                optionalIntValue ?? 0
+            },
+            set: {
+                optionalIntValue = $0
+            }
+        )
+    }
+    private var optionalDoubleValueBinding: Binding<Double> {
+        Binding(
+            get: {
+                optionalDoubleValue ?? 0
+            },
+            set: {
+                optionalDoubleValue = $0
+            }
+        )
+    }
+    private var optionalStringValueBinding: Binding<String> {
+        Binding(
+            get: {
+                optionalStringValue ?? ""
+            },
+            set: {
+                optionalStringValue = $0
+            }
+        )
+    }
     private let footer: AnyView?
     private let numberFormatter: NumberFormatter
 
@@ -176,6 +225,10 @@ struct GeneralSettingsView: View {
             TextField("GeneralSettingsView.intValue", value: $intValue, formatter: numberFormatter)
             TextField("GeneralSettingsView.doubleValue", value: $doubleValue, formatter: numberFormatter)
             TextField("GeneralSettingsView.stringValue", text: $stringValue)
+            Toggle("GeneralSettingsView.optionalBoolValue", isOn: optionalBoolValueBinding)
+            TextField("GeneralSettingsView.optionalIntValue", value: optionalIntValueBinding, formatter: numberFormatter)
+            TextField("GeneralSettingsView.optionalDoubleValue", value: optionalDoubleValueBinding, formatter: numberFormatter)
+            TextField("GeneralSettingsView.optionalStringValue", text: optionalStringValueBinding)
 
             if let footer {
                 footer

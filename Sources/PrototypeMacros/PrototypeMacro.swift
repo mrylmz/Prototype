@@ -88,9 +88,25 @@ public struct PrototypeMacro: PeerMacro {
                 
                 members.forEach { member in
                     let key = "\(spec.name).\(member.name)"
-                    let initializer = member.initializer?.description ?? "= .init()"
+                    let defaultInitializer = member.type.isOptional ? "" : "= .init()"
+                    let initializer = member.initializer?.description ?? defaultInitializer
                     let tail = member.type.isOptional ? "?" : ""
                     properties.append("@AppStorage(\"\(key)\") private var \(member.name): \(member.type.name)\(tail) \(initializer)")
+                }
+                
+                members.forEach { member in
+                    guard member.type.isOptional else { return }
+
+                    properties.append(
+                    """
+                    private var \(member.name)Binding: Binding<\(member.type.name)> {
+                        Binding(
+                            get: { \(member.name) ?? \(member.type.defaultValue) },
+                            set: { \(member.name) = $0 }
+                        )
+                    }
+                    """
+                    )
                 }
                 
                 try members.forEach { member in
@@ -203,12 +219,6 @@ extension PrototypeMacro {
 }
 
 extension PrototypeMacro {
-    private static let numericTypes = [
-        "Int8", "Int16", "Int32", "Int64", "Int",
-        "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
-        "Float16", "Float32", "Float64", "Float80", "Float", "Double"
-    ]
-
     private static func buildMemberSpecFormSyntax(
         arguments: PrototypeArguments,
         keyPrefix: String,
@@ -240,7 +250,7 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            if numericTypes.contains(spec.type.name) {
+            if spec.type.isNumeric {
                 result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")
@@ -265,7 +275,15 @@ extension PrototypeMacro {
 
         let key = "\"\(keyPrefix).\(spec.name)\""
         let labelKey = "\"\(keyPrefix).\(spec.name).label\""
-        let binding = spec.attributes.contains(.modifiable) ? "$\(spec.name)" : ".constant(\(spec.name))"
+        var binding = spec.attributes.contains(.modifiable) ? "$\(spec.name)" : ".constant(\(spec.name))"
+        
+        if spec.type.isOptional {
+            if spec.attributes.contains(.modifiable) {
+                binding = "\(spec.name)Binding"
+            } else {
+                binding = ".constant(\(spec.name) ?? \(spec.type.defaultValue)"
+            }
+        }
 
         if arguments.style == .labeled {
             result.append("LabeledContent(\(labelKey)) {")
@@ -286,7 +304,7 @@ extension PrototypeMacro {
             result.append("DatePicker(\(key), selection: \(binding))")
 
         default:
-            if numericTypes.contains(spec.type.name) {
+            if spec.type.isNumeric {
                 result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")

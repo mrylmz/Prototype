@@ -24,4 +24,8 @@ struct General {
     var intValue: Int = 0
     var doubleValue: Double = 0
     var stringValue: String = ""
+    var optionalBoolValue: Bool?
+    var optionalIntValue: Int?
+    var optionalDoubleValue: Double?
+    var optionalStringValue: String?
 }

@@ -5,7 +5,7 @@ import SwiftSyntaxExtensions
 public struct PrototypeTypeSpec {
     public let name: String
     public let isOptional: Bool
-    
+
     private init(name: String, isOptional: Bool) {
         self.name = name
         self.isOptional = isOptional
@@ -23,5 +23,31 @@ public struct PrototypeTypeSpec {
         }
         
         return nil
+    }
+}
+
+extension PrototypeTypeSpec {
+    private static let numericTypes: [String] = [
+        "Int8", "Int16", "Int32", "Int64", "Int",
+        "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
+        "Float16", "Float32", "Float64", "Float80", "Float", "Double"
+    ]
+
+    public var isNumeric: Bool { Self.numericTypes.contains(name) }
+    
+    public var defaultValue: String {
+        if isNumeric {
+            return "0"
+        }
+        
+        if name == "Bool" {
+            return "false"
+        }
+        
+        if name == "String" {
+            return "\"\""
+        }
+        
+        return ".init()"
     }
 }
