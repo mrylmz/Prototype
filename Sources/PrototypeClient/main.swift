@@ -10,11 +10,12 @@ struct Author {
 struct Article {
     var title: String
     var content: String
-    @Secure var password: String
+    @Field(.secure) var password: String
     
     @Section("metadata")
-    var isPublished: Bool
-    let views: Int
+    
+    @Field(.readonly) var isPublished: Bool
+    @Field(.hidden) let views: Int
     let author: Author
 }
 

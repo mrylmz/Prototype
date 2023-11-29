@@ -6,8 +6,8 @@ import XCTest
 import PrototypeMacros
 
 let testMacros: [String: Macro.Type] = [
+    "Field": FieldMacro.self,
     "Prototype": PrototypeMacro.self,
-    "Secure": SecureMacro.self
 ]
 #endif
 

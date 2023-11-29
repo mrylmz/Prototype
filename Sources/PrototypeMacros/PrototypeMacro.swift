@@ -15,7 +15,7 @@ public struct PrototypeMacro: PeerMacro {
             throw PrototypeMacrosError.macro("Prototype", canOnlyBeAttachedTo: .classOrStructDeclaration)
         }
         
-        let arguments = try PrototypeArguments(from: node)
+        let arguments = try PrototypeMacroArguments(from: node)
         let spec = try PrototypeSpec(parsing: declaration)
         var result: [DeclSyntax] = []
 
@@ -220,7 +220,7 @@ extension PrototypeMacro {
 
 extension PrototypeMacro {
     private static func buildMemberSpecFormSyntax(
-        arguments: PrototypeArguments,
+        arguments: PrototypeMacroArguments,
         keyPrefix: String,
         spec: PrototypeMemberSpec
     ) throws -> String {
@@ -265,7 +265,7 @@ extension PrototypeMacro {
     }
     
     private static func buildMemberSpecSettingsSyntax(
-        arguments: PrototypeArguments,
+        arguments: PrototypeMacroArguments,
         keyPrefix: String,
         spec: PrototypeMemberSpec
     ) throws -> String {
@@ -319,7 +319,7 @@ extension PrototypeMacro {
     }
     
     private static func buildMemberSpecViewSyntax(
-        arguments: PrototypeArguments,
+        arguments: PrototypeMacroArguments,
         keyPrefix: String,
         spec: PrototypeMemberSpec
     ) throws -> String {

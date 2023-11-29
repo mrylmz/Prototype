@@ -70,8 +70,19 @@ public struct PrototypeMemberSpec {
             attributes.remove(.visible)
         }
         
-        if declaration.hasAttribute(named: "Secure") {
-            attributes.insert(.secure)
+        if let fieldAttribute = declaration.attribute(named: "Field") {
+            let arguments = try FieldMacroArguments(from: fieldAttribute)
+            if arguments.attributes.contains(.hidden) {
+                attributes.remove(.visible)
+            }
+            
+            if arguments.attributes.contains(.readonly) {
+                attributes.remove(.modifiable)
+            }
+            
+            if arguments.attributes.contains(.secure) {
+                attributes.insert(.secure)
+            }
         }
         
         let sectionTitle = declaration
@@ -109,5 +120,9 @@ public struct PrototypeMemberSpec {
             sectionTitle: sectionTitle,
             descriptionTitle: descriptionTitle
         )
+        
+        if attributes.contains(.secure), !type.isString {
+            throw PrototypeMacrosError.argument(.secure, ofMacro: .field, canOnlyBeAttachedTo: .variableDeclaration, ofType: .string)
+        }
     }
 }

@@ -78,11 +78,12 @@ Source:
 struct Article {
     var title: String
     var content: String
-    @Secure var password: String
+    @Field(.secure) var password: String
     
     @Section("metadata")
-    var isPublished: Bool
-    let views: Int
+    
+    @Field(.readonly) var isPublished: Bool
+    @Field(.hidden) let views: Int
     let author: Author
 }
 ```
@@ -111,8 +112,7 @@ struct ArticleForm: View {
             TextField("ArticleForm.content", text: $model.content)
             SecureField("ArticleForm.password", text: $model.password)
             Section(header: Text("ArticleForm.metadata")) {
-                Toggle("ArticleForm.isPublished", isOn: $model.isPublished)
-                TextField("ArticleForm.views", value: .constant(model.views), formatter: numberFormatter)
+                Toggle("ArticleForm.isPublished", isOn: .constant(model.isPublished))
                 AuthorForm(model: .constant(model.author))
             }
 
@@ -138,7 +138,6 @@ struct ArticleView: View {
             LabeledContent("ArticleView.isPublished") {
                 Text(model.isPublished.description)
             }
-            LabeledContent("ArticleView.views", value: model.views, format: .number)
             AuthorView(model: model.author)
         }
     }

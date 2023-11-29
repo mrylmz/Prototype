@@ -16,15 +16,23 @@ public enum PrototypeMacrosError: Error {
     }
     
     public enum OfMacro: String, CustomStringConvertible {
+        case field = "Field"
         case prototype = "Prototype"
         
         public var description: String { "`\(rawValue)`" }
     }
     
     public enum MacroArgument: String, CustomStringConvertible {
+        case attributes
         case kinds
         
         public var description: String { "`\(rawValue)`" }
+    }
+    
+    public enum CaseArgument: String, CustomStringConvertible {
+        case secure
+        
+        public var description: String { "`.\(rawValue)`" }
     }
     
     public enum Syntax: String, CustomStringConvertible {
@@ -35,6 +43,13 @@ public enum PrototypeMacrosError: Error {
     
     case macro(
         _ macro: String,
+        canOnlyBeAttachedTo: Attachment,
+        ofType: OfType = .none
+    )
+    
+    case argument(
+        _ argument: CaseArgument,
+        ofMacro: OfMacro,
         canOnlyBeAttachedTo: Attachment,
         ofType: OfType = .none
     )
@@ -53,6 +68,9 @@ extension PrototypeMacrosError: CustomDebugStringConvertible {
         switch self {
         case let .macro(macro, attachment, type) where type == .none:
             "Macro \(macro) can only be attached to \(attachment)."
+            
+        case let .argument(argument, macro, attachment, type):
+            "Argument \(argument) in Macro \(macro) can only be attached to \(attachment) of type \(type)."
             
         case let .macro(macro, attachment, type):
             "Macro \(macro) can only be attached to \(attachment) of type \(type)."

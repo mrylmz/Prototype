@@ -33,6 +33,8 @@ extension PrototypeTypeSpec {
         "Float16", "Float32", "Float64", "Float80", "Float", "Double"
     ]
 
+    public var isBool: Bool { name == "Bool" }
+    public var isString: Bool { name == "String" }
     public var isNumeric: Bool { Self.numericTypes.contains(name) }
     
     public var defaultValue: String {
@@ -40,11 +42,11 @@ extension PrototypeTypeSpec {
             return "0"
         }
         
-        if name == "Bool" {
+        if isBool {
             return "false"
         }
         
-        if name == "String" {
+        if isString {
             return "\"\""
         }
         

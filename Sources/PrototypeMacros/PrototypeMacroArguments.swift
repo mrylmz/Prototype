@@ -2,7 +2,7 @@ import Foundation
 import SwiftSyntax
 import PrototypeAPI
 
-public struct PrototypeArguments {
+public struct PrototypeMacroArguments {
     public let style: PrototypeStyle
     public let kinds: Set<PrototypeKind>
     
