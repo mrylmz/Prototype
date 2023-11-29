@@ -1,4 +1,5 @@
 import Prototype
+import PrototypeUI
 import SwiftUI
 
 @Prototype(style: .labeled, kinds: .form, .view)
@@ -17,6 +18,8 @@ struct Article {
     @Field(.readonly) var isPublished: Bool
     @Field(.hidden) let views: Int
     let author: Author
+    
+    let temperature: Measurement<UnitTemperature>
 }
 
 @Prototype(style: .inline, kinds: .settings)
