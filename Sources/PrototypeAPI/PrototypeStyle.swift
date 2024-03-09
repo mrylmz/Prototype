@@ -1,5 +1,3 @@
-import Foundation
-
 public enum PrototypeStyle: String, CaseIterable {
     case inline
     case labeled

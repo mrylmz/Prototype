@@ -1,8 +1,5 @@
-import SwiftCompilerPlugin
 import SwiftSyntax
-import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
-import SwiftSyntaxExtensions
 
 /// The peer macro implementation of the `@Field` macro.
 public struct FieldMacro: PeerMacro {
