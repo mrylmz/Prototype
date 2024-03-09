@@ -1,5 +1,3 @@
-import Foundation
-
 public enum PrototypeMacrosError: Error {
     public enum Attachment: String, CustomStringConvertible {
         case variableDeclaration = "`var`, `let` declaration"

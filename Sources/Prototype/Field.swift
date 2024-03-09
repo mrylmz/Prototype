@@ -1,4 +1,3 @@
-import Foundation
 import PrototypeAPI
 
 @attached(peer, names: suffixed(Form), suffixed(View), suffixed(SettingsView))

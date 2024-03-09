@@ -1,4 +1,3 @@
-import Foundation
 import SwiftSyntax
 
 /// An option set describing the access level modifiers of a `declaration`.
