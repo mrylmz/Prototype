@@ -1,6 +1,4 @@
-import Foundation
 import SwiftSyntax
-import SwiftSyntaxExtensions
 
 public struct PrototypeTypeSpec {
     public let name: String
