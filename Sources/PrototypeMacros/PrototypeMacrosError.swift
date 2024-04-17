@@ -15,6 +15,7 @@ public enum PrototypeMacrosError: Error {
     
     public enum OfMacro: String, CustomStringConvertible {
         case field = "Field"
+        case format = "Format"
         case prototype = "Prototype"
         
         public var description: String { "`\(rawValue)`" }
@@ -23,6 +24,7 @@ public enum PrototypeMacrosError: Error {
     public enum MacroArgument: String, CustomStringConvertible {
         case attributes
         case kinds
+        case using
         
         public var description: String { "`\(rawValue)`" }
     }

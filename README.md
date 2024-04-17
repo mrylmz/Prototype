@@ -237,6 +237,62 @@ struct GeneralSettingsView: View {
 }
 ```
 
+Source:
+```swift
+@Prototype(style: .inline, kinds: .view, .form)
+@Model
+final class Item {
+    @Format(using: Date.FormatStyle(date: .numeric, time: .standard))
+    var timestamp: Date
+    
+    init(timestamp: Date) {
+        self.timestamp = timestamp
+    }
+}
+```
+Macro Expansion:
+```swift
+struct ItemView: View {
+    public let model: Item
+
+    public init(model: Item) {
+        self.model = model
+    }
+
+    public var body: some View {
+        LabeledContent("ItemView.timestamp", value: model.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+    }
+}
+
+struct ItemForm: View {
+    @Binding public var model: Item
+    private let footer: AnyView?
+    private let numberFormatter: NumberFormatter
+
+    public init(model: Binding<Item>, numberFormatter: NumberFormatter = .init()) {
+        self._model = model
+        self.footer = nil
+        self.numberFormatter = numberFormatter
+    }
+
+    public init<Footer>(model: Binding<Item>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+        self._model = model
+        self.footer = AnyView(erasing: footer())
+        self.numberFormatter = numberFormatter
+    }
+
+    public var body: some View {
+        Form {
+            DatePicker("ItemForm.timestamp", selection: $model.timestamp)
+
+            if let footer {
+                footer
+            }
+        }
+    }
+}
+```
+
 ## License
 
 Prototype is under the MIT License. Refer to [LICENSE](LICENSE) for details.

@@ -24,6 +24,7 @@ public struct PrototypeMemberSpec {
     public let type: PrototypeTypeSpec
     public let initializer: InitializerClauseSyntax?
     public let attributes: PrototypeMemberAttributes
+    public let formatExpression: ExprSyntax?
     public let sectionTitle: String?
     public let descriptionTitle: String?
     
@@ -33,6 +34,7 @@ public struct PrototypeMemberSpec {
         type: PrototypeTypeSpec,
         initializer: InitializerClauseSyntax?,
         attributes: PrototypeMemberAttributes,
+        formatExpression: ExprSyntax?,
         sectionTitle: String?,
         descriptionTitle: String?
     ) {
@@ -41,6 +43,7 @@ public struct PrototypeMemberSpec {
         self.type = type
         self.initializer = initializer
         self.attributes = attributes
+        self.formatExpression = formatExpression
         self.sectionTitle = sectionTitle
         self.descriptionTitle = descriptionTitle
     }
@@ -84,6 +87,12 @@ public struct PrototypeMemberSpec {
             }
         }
         
+        var formatExpression: ExprSyntax?
+        if let formatAttribute = declaration.attribute(named: "Format") {
+            let arguments = try FormatMacroArguments(from: formatAttribute)
+            formatExpression = arguments.expression
+        }
+        
         let sectionTitle = declaration
             .attribute(named: "Section")?
             .arguments?.as(LabeledExprListSyntax.self)?
@@ -116,6 +125,7 @@ public struct PrototypeMemberSpec {
             type: type,
             initializer: binding.initializer,
             attributes: attributes,
+            formatExpression: formatExpression,
             sectionTitle: sectionTitle,
             descriptionTitle: descriptionTitle
         )

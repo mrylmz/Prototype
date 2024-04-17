@@ -346,15 +346,27 @@ extension PrototypeMacro {
             """
             )
         } else if spec.type.name == "String" {
+            let formatArgument = spec.formatExpression.flatMap { expression in
+                ", format: \(expression)"
+            } ?? ""
+
             if spec.attributes.contains(.secure) {
-                result.append("LabeledContent(\(key), value: \"********\")")
+                result.append("LabeledContent(\(key), value: \"********\"\(formatArgument))")
             } else {
-                result.append("LabeledContent(\(key), value: model.\(spec.name))")
+                result.append("LabeledContent(\(key), value: model.\(spec.name)\(formatArgument))")
             }
         } else if spec.type.name == "Date" {
-            result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
+            if let formatExpression = spec.formatExpression {
+                result.append("LabeledContent(\(key), value: model.\(spec.name), format: \(formatExpression))")
+            } else {
+                result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
+            }
         } else if numericTypes.contains(spec.type.name) {
-            result.append("LabeledContent(\(key), value: model.\(spec.name), format: .number)")
+            if let formatExpression = spec.formatExpression {
+                result.append("LabeledContent(\(key), value: model.\(spec.name), format: \(formatExpression))")
+            } else {
+                result.append("LabeledContent(\(key), value: model.\(spec.name), format: .number)")
+            }
         } else {
             result.append("\(spec.type.name)View(model: model.\(spec.name))")
         }

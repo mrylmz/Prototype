@@ -1,6 +1,8 @@
+import Foundation
 import Prototype
 import PrototypeUI
 import SwiftUI
+import SwiftData
 
 @Prototype(style: .labeled, kinds: .form, .view)
 struct Author {
@@ -18,8 +20,6 @@ struct Article {
     @Field(.readonly) var isPublished: Bool
     @Field(.hidden) let views: Int
     let author: Author
-    
-    let temperature: Measurement<UnitTemperature>
 }
 
 @Prototype(style: .inline, kinds: .settings)
@@ -32,4 +32,15 @@ struct General {
     var optionalIntValue: Int?
     var optionalDoubleValue: Double?
     var optionalStringValue: String?
+}
+
+@Prototype(style: .inline, kinds: .view, .form)
+@Model
+final class Item {
+    @Format(using: Date.FormatStyle(date: .numeric, time: .standard))
+    var timestamp: Date
+    
+    init(timestamp: Date) {
+        self.timestamp = timestamp
+    }
 }
