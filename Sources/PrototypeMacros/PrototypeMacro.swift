@@ -331,12 +331,6 @@ extension PrototypeMacro {
             result.append("LabeledContent(\(labelKey)) {")
         }
         
-        let numericTypes = [
-            "Int8", "Int16", "Int32", "Int64", "Int", 
-            "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
-            "Float16", "Float32", "Float64", "Float80", "Float", "Double"
-        ]
-        
         if spec.type.name == "Bool" {
             result.append(
             """
@@ -361,7 +355,7 @@ extension PrototypeMacro {
             } else {
                 result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
             }
-        } else if numericTypes.contains(spec.type.name) {
+        } else if spec.type.isNumeric {
             if let formatExpression = spec.formatExpression {
                 result.append("LabeledContent(\(key), value: model.\(spec.name), format: \(formatExpression))")
             } else {

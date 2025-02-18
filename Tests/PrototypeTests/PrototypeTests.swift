@@ -12,6 +12,44 @@ let testMacros: [String: Macro.Type] = [
 #endif
 
 final class PrototypeTests: XCTestCase {
+    func testProtoptypeMacroSupportsDecimal() throws {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .view)
+            class MyClass {
+                @Format(using: .custom)
+                let decimalValue: Decimal
+            }
+            """,
+            expandedSource: """
+            class MyClass {
+                @Format(using: .custom)
+                let decimalValue: Decimal
+            }
+            
+            struct MyClassView: View {
+                public let model: MyClass
+            
+                public init(model: MyClass) {
+                    self.model = model
+                }
+            
+                public var body: some View {
+                    LabeledContent("MyClassView.decimalValue.label") {
+                        LabeledContent("MyClassView.decimalValue", value: model.decimalValue, format: .custom)
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+
     func testPrototypeMacroErrorUnsupportedPeerDeclarationOnEnum() throws {
         #if canImport(PrototypeMacros)
         assertMacroExpansion(
