@@ -5,13 +5,16 @@ import CompilerPluginSupport
 
 let package = Package(
     name: "Prototype",
-    platforms: [.macOS(.v13), .iOS(.v16), .tvOS(.v16), .watchOS(.v6), .macCatalyst(.v16)],
+    platforms: [.macOS(.v14), .iOS(.v16), .tvOS(.v16), .watchOS(.v6), .macCatalyst(.v16)],
     products: [
         .library(name: "Prototype", targets: ["Prototype", "PrototypeAPI"]),
         .library(name: "PrototypeUI", targets: ["PrototypeUI"])
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0-swift-5.9-DEVELOPMENT-SNAPSHOT-2023-04-25-b"),
+        .package(
+            url: "https://github.com/apple/swift-syntax.git",
+            from: "509.0.0-swift-5.9-DEVELOPMENT-SNAPSHOT-2023-04-25-b"
+        ),
     ],
     targets: [
         .macro(
