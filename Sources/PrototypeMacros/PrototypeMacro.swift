@@ -248,7 +248,11 @@ extension PrototypeMacro {
 
         default:
             if spec.type.isNumeric {
-                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                if let formatExpression = spec.formatExpression {
+                    result.append("TextField(\(key), value: \(binding), format: \(formatExpression))")
+                } else {
+                    result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                }
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")
             }
@@ -302,7 +306,11 @@ extension PrototypeMacro {
 
         default:
             if spec.type.isNumeric {
-                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                if let formatExpression = spec.formatExpression {
+                    result.append("TextField(\(key), value: \(binding), format: \(formatExpression))")
+                } else {
+                    result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                }
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")
             }
