@@ -44,22 +44,26 @@ public struct PrototypeMacro: PeerMacro {
                 if isInSection {
                     body.append("}")
                 }
-                
+
+                let modelAttribute = spec.kind == .binding ? "@Binding" : "@ObservedObject"
+                let modelParameter = spec.kind == .binding ? "Binding<\(spec.name)>": "\(spec.name)"
+                let modelAssignment = spec.kind == .binding ? "self._model = model" : "self.model = model"
+
                 result.append(
                 """
                 \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
-                @Binding public var model: \(raw: spec.name)
+                \(raw: modelAttribute) public var model: \(raw: spec.name)
                 private let footer: AnyView?
                 private let numberFormatter: NumberFormatter
                 
-                public init(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init()) {
-                    self._model = model
+                public init(model: \(raw: modelParameter), numberFormatter: NumberFormatter = .init()) {
+                    \(raw: modelAssignment)
                     self.footer = nil
                     self.numberFormatter = numberFormatter
                 }
                 
-                public init<Footer>(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
-                    self._model = model
+                public init<Footer>(model: \(raw: modelParameter), numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    \(raw: modelAssignment)
                     self.footer = AnyView(erasing: footer())
                     self.numberFormatter = numberFormatter
                 }
@@ -248,7 +252,11 @@ extension PrototypeMacro {
 
         default:
             if spec.type.isNumeric {
-                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                if let formatExpression = spec.formatExpression {
+                    result.append("TextField(\(key), value: \(binding), format: \(formatExpression))")
+                } else {
+                    result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                }
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")
             }
@@ -302,7 +310,11 @@ extension PrototypeMacro {
 
         default:
             if spec.type.isNumeric {
-                result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                if let formatExpression = spec.formatExpression {
+                    result.append("TextField(\(key), value: \(binding), format: \(formatExpression))")
+                } else {
+                    result.append("TextField(\(key), value: \(binding), formatter: numberFormatter)")
+                }
             } else {
                 result.append("\(spec.type.name)Form(model: \(binding))")
             }
@@ -331,12 +343,6 @@ extension PrototypeMacro {
             result.append("LabeledContent(\(labelKey)) {")
         }
         
-        let numericTypes = [
-            "Int8", "Int16", "Int32", "Int64", "Int", 
-            "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
-            "Float16", "Float32", "Float64", "Float80", "Float", "Double"
-        ]
-        
         if spec.type.name == "Bool" {
             result.append(
             """
@@ -361,7 +367,7 @@ extension PrototypeMacro {
             } else {
                 result.append("LabeledContent(\(key), value: model.\(spec.name), format: .dateTime)")
             }
-        } else if numericTypes.contains(spec.type.name) {
+        } else if spec.type.isNumeric {
             if let formatExpression = spec.formatExpression {
                 result.append("LabeledContent(\(key), value: model.\(spec.name), format: \(formatExpression))")
             } else {

@@ -28,7 +28,8 @@ extension PrototypeTypeSpec {
     private static let numericTypes: [String] = [
         "Int8", "Int16", "Int32", "Int64", "Int",
         "UInt8", "UInt16", "UInt32", "UInt64", "UInt",
-        "Float16", "Float32", "Float64", "Float80", "Float", "Double"
+        "Float16", "Float32", "Float64", "Float80", "Float", "Double",
+        "Decimal"
     ]
 
     public var isBool: Bool { name == "Bool" }
