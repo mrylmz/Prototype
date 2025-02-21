@@ -44,22 +44,26 @@ public struct PrototypeMacro: PeerMacro {
                 if isInSection {
                     body.append("}")
                 }
-                
+
+                let modelAttribute = spec.kind == .binding ? "@Binding" : "@ObservedObject"
+                let modelParameter = spec.kind == .binding ? "Binding<\(spec.name)>": "\(spec.name)"
+                let modelAssignment = spec.kind == .binding ? "self._model = model" : "self.model = model"
+
                 result.append(
                 """
                 \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
-                @Binding public var model: \(raw: spec.name)
+                \(raw: modelAttribute) public var model: \(raw: spec.name)
                 private let footer: AnyView?
                 private let numberFormatter: NumberFormatter
                 
-                public init(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init()) {
-                    self._model = model
+                public init(model: \(raw: modelParameter), numberFormatter: NumberFormatter = .init()) {
+                    \(raw: modelAssignment)
                     self.footer = nil
                     self.numberFormatter = numberFormatter
                 }
                 
-                public init<Footer>(model: Binding<\(raw: spec.name)>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
-                    self._model = model
+                public init<Footer>(model: \(raw: modelParameter), numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    \(raw: modelAssignment)
                     self.footer = AnyView(erasing: footer())
                     self.numberFormatter = numberFormatter
                 }

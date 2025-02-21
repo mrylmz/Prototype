@@ -316,4 +316,108 @@ final class PrototypeTests: XCTestCase {
         throw XCTSkip("macros are only supported when running tests for the host platform")
         #endif
     }
+
+    func testProtoytypeFormWithObservableObject() {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .form)
+            class Sample: ObservableObject {
+                var value: Int
+            }
+            """,
+            expandedSource: """
+            class Sample: ObservableObject {
+                var value: Int
+            }
+            
+            struct SampleForm: View {
+                @ObservedObject public var model: Sample
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+            
+                public init(model: Sample, numberFormatter: NumberFormatter = .init()) {
+                    self.model = model
+                    self.footer = nil
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public init<Footer>(model: Sample, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self.model = model
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public var body: some View {
+                    Form {
+                        LabeledContent("SampleForm.value.label") {
+                            TextField("SampleForm.value", value: $model.value, formatter: numberFormatter)
+                        }
+            
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+
+    func testProtoytypeFormWithClass() {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .form)
+            class Sample {
+                var value: Int
+            }
+            """,
+            expandedSource: """
+            class Sample {
+                var value: Int
+            }
+            
+            struct SampleForm: View {
+                @Binding public var model: Sample
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+            
+                public init(model: Binding<Sample>, numberFormatter: NumberFormatter = .init()) {
+                    self._model = model
+                    self.footer = nil
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public init<Footer>(model: Binding<Sample>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self._model = model
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public var body: some View {
+                    Form {
+                        LabeledContent("SampleForm.value.label") {
+                            TextField("SampleForm.value", value: $model.value, formatter: numberFormatter)
+                        }
+            
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
 }
