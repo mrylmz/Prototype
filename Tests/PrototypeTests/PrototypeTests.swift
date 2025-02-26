@@ -51,7 +51,7 @@ final class PrototypeTests: XCTestCase {
     }
 
     func testPrototypeMacroErrorUnsupportedPeerDeclarationOnEnum() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             @Prototype(kinds: .view)
@@ -69,13 +69,13 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorUnsupportedPeerDeclarationOnVariable() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             @Prototype(kinds: .view)
@@ -93,13 +93,13 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorInvalidPrototypeKindArgument() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             @Prototype(kinds: .unknown)
@@ -117,13 +117,13 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
 
     func testPrototypeMacroErrorMissingPrototypeKindArgument() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             @Prototype()
@@ -141,13 +141,13 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorDuplicatePrototypeKindArgument() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             @Prototype(kinds: .view, .form, .form, .view)
@@ -165,17 +165,17 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorMissingMemberPatternTypeAnnotation() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             import SwiftUI
-
+            
             @Prototype(kinds: .form)
             struct MyStruct {
                 @Environment(\\.accessibilityEnabled) var accessibilityEnabled
@@ -196,17 +196,17 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorUnsupportedMemberPatternBinding() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             import SwiftUI
-
+            
             @Prototype(kinds: .form)
             class MyClass {
                 var callable: () -> Void
@@ -227,17 +227,17 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroErrorUnsupportedPatternBinding() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             import SwiftUI
-
+            
             @Prototype(kinds: .form)
             class MyClass {
                 var (x, y): (Int, Int)
@@ -258,17 +258,17 @@ final class PrototypeTests: XCTestCase {
             ],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
-    
+
     func testPrototypeMacroWithSettingsKind() throws {
-        #if canImport(PrototypeMacros)
+#if canImport(PrototypeMacros)
         assertMacroExpansion(
             """
             import SwiftUI
-
+            
             @Prototype(style: .inline, kinds: .settings)
             struct General {
                 var showPreview: Bool = false
@@ -283,25 +283,25 @@ final class PrototypeTests: XCTestCase {
                 var text: String = "Hello World!"
                 var fontSize: Double = 12.0
             }
-
+            
             struct GeneralSettingsView: View {
                 @AppStorage("General.showPreview") private var showPreview: Bool = false
                 @AppStorage("General.text") private var text: String = "Hello World!"
                 @AppStorage("General.fontSize") private var fontSize: Double = 12.0
                 private let footer: AnyView?
                 private let numberFormatter: NumberFormatter
-
+            
                 public init<Footer>(numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
                     self.footer = AnyView(erasing: footer())
                     self.numberFormatter = numberFormatter
                 }
-
+            
                 public var body: some View {
                     Form {
                         Toggle("GeneralSettingsView.showPreview", isOn: $showPreview)
                         TextField("GeneralSettingsView.text", text: $text)
                         TextField("GeneralSettingsView.fontSize", value: $fontSize, formatter: numberFormatter)
-
+            
                         if let footer {
                             footer
                         }
@@ -312,9 +312,9 @@ final class PrototypeTests: XCTestCase {
             diagnostics: [],
             macros: testMacros
         )
-        #else
+#else
         throw XCTSkip("macros are only supported when running tests for the host platform")
-        #endif
+#endif
     }
 
     func testProtoytypeFormWithObservableObject() {
@@ -406,6 +406,127 @@ final class PrototypeTests: XCTestCase {
                             TextField("SampleForm.value", value: $model.value, formatter: numberFormatter)
                         }
             
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+
+    func testViewHandlesGenericStruct() throws {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .view)
+            struct Sample<Data> where Data: Match {
+            }
+            """,
+            expandedSource: """
+            struct Sample<Data> where Data: Match {
+            }
+            
+            struct SampleView<Data>: View where Data: Match {
+                public let model: Sample<Data>
+            
+                public init(model: Sample<Data>) {
+                    self.model = model
+                }
+            
+                public var body: some View {
+                    EmptyView()
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+
+    func testFormHandlesGenericStruct() throws {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .form)
+            struct Sample<Data> where Data: Match {
+            }
+            """,
+            expandedSource: """
+            struct Sample<Data> where Data: Match {
+            }
+            
+            struct SampleForm<Data>: View where Data: Match {
+                @Binding public var model: Sample<Data>
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+            
+                public init(model: Binding<Sample<Data>>, numberFormatter: NumberFormatter = .init()) {
+                    self._model = model
+                    self.footer = nil
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public init<Footer>(model: Binding<Sample<Data>>, numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self._model = model
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+            
+                public var body: some View {
+                    Form {
+            
+            
+                        if let footer {
+                            footer
+                        }
+                    }
+                }
+            }
+            """,
+            diagnostics: [],
+            macros: testMacros
+        )
+#else
+        throw XCTSkip("macros are only supported when running tests for the host platform")
+#endif
+    }
+
+    func testSettingsHandlesGenericStruct() throws {
+#if canImport(PrototypeMacros)
+        assertMacroExpansion(
+            """
+            @Prototype(kinds: .settings)
+            struct Sample<Data> where Data: Match {
+            }
+            """,
+            expandedSource: """
+            struct Sample<Data> where Data: Match {
+            }
+            
+            struct SampleSettingsView<Data>: View where Data: Match {
+
+                private let footer: AnyView?
+                private let numberFormatter: NumberFormatter
+
+                public init<Footer>(numberFormatter: NumberFormatter = .init(), @ViewBuilder footer: () -> Footer) where Footer: View {
+                    self.footer = AnyView(erasing: footer())
+                    self.numberFormatter = numberFormatter
+                }
+
+                public var body: some View {
+                    Form {
+
+
                         if let footer {
                             footer
                         }

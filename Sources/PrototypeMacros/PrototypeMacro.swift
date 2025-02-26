@@ -70,13 +70,13 @@ extension PrototypeMacro {
         }
 
         let modelAttribute = spec.kind == .binding ? "@Binding" : "@ObservedObject"
-        let modelParameter = spec.kind == .binding ? "Binding<\(spec.name)>": "\(spec.name)"
+        let modelParameter = spec.kind == .binding ? "Binding<\(spec.name)\(spec.genericParameters)>": "\(spec.name)"
         let modelAssignment = spec.kind == .binding ? "self._model = model" : "self.model = model"
 
         return
             """
-            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form: View {
-            \(raw: modelAttribute) public var model: \(raw: spec.name)
+            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)Form\(raw: spec.genericParametersClause): View \(raw: spec.genericWhereClause){
+            \(raw: modelAttribute) public var model: \(raw: spec.name)\(raw: spec.genericParameters)
             private let footer: AnyView?
             private let numberFormatter: NumberFormatter
             
@@ -211,7 +211,7 @@ extension PrototypeMacro {
 
         return
             """
-            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)SettingsView: View {
+            \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)SettingsView\(raw: spec.genericParametersClause): View \(raw: spec.genericWhereClause){
             \(raw: properties.joined(separator: "\n"))
             private let footer: AnyView?
             private let numberFormatter: NumberFormatter
@@ -329,10 +329,10 @@ extension PrototypeMacro {
 
         return
                 """
-                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View: View {
-                public let model: \(raw: spec.name)
+                \(raw: spec.accessLevelModifiers.structDeclAccessLevelModifiers) struct \(raw: spec.name)View\(raw: spec.genericParametersClause): View \(raw: spec.genericWhereClause){
+                public let model: \(raw: spec.name)\(raw: spec.genericParameters)
                 
-                public init(model: \(raw: spec.name)) {
+                public init(model: \(raw: spec.name)\(raw: spec.genericParameters)) {
                     self.model = model
                 }
                 
