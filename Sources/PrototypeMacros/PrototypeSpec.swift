@@ -12,17 +12,26 @@ public struct PrototypeSpec {
     public let name: String
     public let members: [PrototypeMemberSpec]
     public let kind: Kind
+    public let genericParametersClause: String
+    public let genericParameters: String
+    public let genericWhereClause: String
 
     public init(
         accessLevelModifiers: AccessLevelModifiers,
         name: String,
         members: [PrototypeMemberSpec],
-        kind: Kind = .binding
+        kind: Kind = .binding,
+        genericParametersClause: String,
+        genericParameters: String,
+        genericWhereClause: String
     ) {
         self.accessLevelModifiers = accessLevelModifiers
         self.name = name
         self.members = members
         self.kind = kind
+        self.genericParametersClause = genericParametersClause
+        self.genericParameters = genericParameters
+        self.genericWhereClause = genericWhereClause
     }
 
     public init(parsing declaration: some DeclSyntaxProtocol) throws {
@@ -54,7 +63,10 @@ public struct PrototypeSpec {
             accessLevelModifiers: declaration.accessLevelModifiers,
             name: declaration.name.trimmed.text,
             members: members,
-            kind: kind
+            kind: kind,
+            genericParametersClause: declaration.genericParameterClause?.trimmedDescription ?? "",
+            genericParameters: declaration.genericParameterClause?.names ?? "",
+            genericWhereClause: declaration.genericWhereClause?.trimmedDescription ?? ""
         )
     }
     
@@ -69,6 +81,22 @@ public struct PrototypeSpec {
             return nil
         }.reduce([], +)
         
-        self.init(accessLevelModifiers: declaration.accessLevelModifiers, name: declaration.name.trimmed.text, members: members)
+        self.init(
+            accessLevelModifiers: declaration.accessLevelModifiers,
+            name: declaration.name.trimmed.text,
+            members: members,
+            genericParametersClause: declaration.genericParameterClause?.trimmedDescription ?? "",
+            genericParameters: declaration.genericParameterClause?.names ?? "",
+            genericWhereClause: declaration.genericWhereClause?.trimmedDescription ?? ""
+        )
+    }
+}
+
+extension GenericParameterClauseSyntax {
+    var names: String {
+        return "<" + parameters.map {
+            $0.name.trimmedDescription
+        }
+        .joined(separator: ", ") + ">"
     }
 }
